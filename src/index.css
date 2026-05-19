@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-cairo: "Cairo", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --color-primary: #22C55E;
+  --color-danger: #EF4444;
+  --color-accent-purple: #8B5CF6;
+  --color-accent-blue: #3B82F6;
+  --color-bg-dark: #0B1020;
+  --color-bg-panel: #111827;
+}
+
+@layer base {
+  :root {
+    --background: 228 48% 8%; /* #0B1020 */
+    --foreground: 210 40% 98%; /* #F8FAFC */
+  }
+
+  body {
+    @apply bg-[var(--color-bg-dark)] text-slate-50 antialiased overflow-x-hidden;
+    font-family: var(--font-cairo);
+  }
+
+  /* English layout font */
+  [dir="ltr"] body {
+    font-family: var(--font-poppins);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-[#111827]/60 backdrop-blur-md border border-white/10 shadow-2xl;
+  }
+  
+  .glow-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+  
+  .glow-red {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+  
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  }
+}
