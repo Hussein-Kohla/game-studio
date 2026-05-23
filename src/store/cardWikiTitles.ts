@@ -5,29 +5,29 @@
 export const CARD_WIKI_TITLES: Record<string, string> = {
   // ── Animals — solo, clear-face article picks ──────────────────────────────
   'أسد':      'Lion',
-  'نمر':      'Bengal_tiger',             // face-forward portrait
+  'نمر':      'Bengal_tiger',             
   'فيل':      'African_bush_elephant',
   'زرافة':    'Giraffe',
-  'حصان':     'Thoroughbred',             // classic horse portrait, face visible
-  'ديك':      'Red_junglefowl',           // vibrant solo male, no hens
+  'حصان':     'horse',             
+  'ديك':      'Red_junglefowl',           
   'قط':       'Tabby_cat',
-  'كلب':      'Labrador_Retriever',       // iconic clean dog face
+  'كلب':      'Dog',       
   'أرنب':     'Rabbit',
-  'ضفدع':     'Frog',                     // reverted — was working fine
+  'ضفدع':     'Frog',                  
   'بومة':     'Great_horned_owl',
-  'دلفين':    'Dolphin',                  // reverted — was working fine
-  'تمساح':    'American_alligator',       // clear frontal head shot
+  'دلفين':    'Dolphin',                  
+  'تمساح':    'American_alligator',       
   'ثعبان':    'Ball_python',
   'طاووس':    'Indian_peafowl',
   'فراشة':    'Monarch_butterfly',
   'دب':       'Brown_bear',
   'ذئب':      'Gray_wolf',
   'قرد':      'Chimpanzee',
-  'حمار':     'Domestic_donkey',          // clearer solo face
+  'حمار':     'North_American_donkeys',          
   'جمل':      'Dromedary',
   'بقرة':     'Cattle',
-  'خروف':     'Merino_sheep',             // single sheep clear portrait
-  'دجاجة':    'Plymouth_Rock_chicken',    // clear solo hen, no rooster
+  'خروف':     'Merino_sheep',             
+  'دجاجة':    'Plymouth_Rock_chicken',    
 
   // ── Football Stars ────────────────────────────────────────────────────────
   'رونالدو':   'Cristiano_Ronaldo',
@@ -40,8 +40,8 @@ export const CARD_WIKI_TITLES: Record<string, string> = {
   'ساكا':      'Bukayo_Saka',
   'فينيسيوس':  'Vinícius_Júnior',
   'ديبالا':    'Paulo_Dybala',
-  'زيدان':     'Zinedine_Zidane',       // replaced كيليان (dup of مبابي)
-  'سالاح':     'Mohamed_Salah',
+  'زيدان':     'Zinedine_Zidane',       
+  'محمد صلاح':     'Mohamed_Salah',
   'فيرمينو':   'Roberto_Firmino',
   'ماني':      'Sadio_Mané',
   'موراتا':    'Álvaro_Morata',
@@ -49,46 +49,53 @@ export const CARD_WIKI_TITLES: Record<string, string> = {
   'كانسيلو':   'João_Cancelo',
   'برونو':     'Bruno_Fernandes',
   'ثياغو':     'Thiago_Alcântara',
-  'أبو تريكة': 'Mohamed_Aboutrika',    // Egyptian legend
   'لامين':     'Lamine_Yamal',
   'بيدري':     'Pedri',
   'غافي':      'Gavi_(footballer)',
   'بيلينغهام': 'Jude_Bellingham',
+  'صلاح':      'Mohamed_Salah',
 
-  // ── Egyptian Celebrities ──────────────────────────────────────────────────
-  'محمد صلاح':        'Mohamed_Salah',
-  'عمرو دياب':        'Amr_Diab',
-  'أم كلثوم':         'Umm_Kulthum',
-  'نجيب محفوظ':       'Naguib_Mahfouz',
-  'أحمد زكي':         'Ahmed_Zaki_(actor)',
-  'ليلى علوي':        'Laila_Elwi',
-  // 'أبو تريكة' already listed above — same Wikipedia article works for both lists
-  'عادل إمام':        'Adel_Imam',
-  'محمود ياسين':      'Mahmoud_Yassin',
-  'فاتن حمامة':       'Faten_Hamama',
-  'رشدي أباظة':       'Rushdy_Abaza',
-  'سعاد حسني':        'Soad_Hosny',
-  'هاني شاكر':        'Hany_Shaker',
-  'طه حسين':          'Taha_Hussein',           // Egyptian writer
-  'يوسف إدريس':       'Yusuf_Idris',            // Egyptian writer
-  'إحسان عبد القدوس': 'Ihsan_Abd_al-Quddus',    // Egyptian writer
-  'سمير غانم':        'Samir_Ghanem',
-  'فريد شوقي':        'Farid_Shawqi',
-  'شريف عرفة':        'Sherif_Arafa',
-  'مني زكي':          'Mona_Zaki',
-  'أحمد السقا':       'Ahmed_El-Sakka',
-  'هند صبري':         'Hend_Sabry',
-  'كريم عبد العزيز':  'Karim_Abdel_Aziz',
-  'نجاة الصغيرة':     'Najat_Al_Saghira',       // iconic Egyptian singer
+// ── Egyptian Celebrities ──────────────────────────────────────────────────
+'عمرو دياب':        'Amr_Diab',
+'أم كلثوم':         'Umm_Kulthum',
+'نجيب محفوظ':       'Naguib_Mahfouz',
+'عادل إمام':        'Adel_Imam',
+'رشدي أباظة':       'Rushdy_Abaza',
+'سعاد حسني':        'Soad_Hosny',
+'طه حسين':          'Taha_Hussein',
+'محمد منير':        'Mohamed_Mounir',
+'سمير غانم':        'Samir_Ghanem',
+'إسماعيل يس':       'Ismail_Yassin',
+'منى زكي':          'Mona_Zaki',
+'أحمد السقا':       'Ahmed_El-Sakka',
+'هند صبري':         'Hend_Sabry',
+'كريم عبد العزيز':  'Karim_Abdel_Aziz',
+'منى الشاذلي':      'Mona_El-Shazly',
+'إلهام شاهين':      'Elham_Shahin',
+'أحمد حلمي':        'Ahmed_Helmy',
+'محمد هنيدي':       'Mohamed_Henedi',
+'أحمد عز':          'Ahmed_Ezz_(actor)',
+'منة شلبي':         'Menna_Shalabi',
+'مي عز الدين':      'Mai_Ezz_Eldin',
+'محمد رمضان':       'Mohamed_Ramadan_(actor)',
+'تامر حسني':        'Tamer_Hosny',
+'مصطفى شعبان':      'Mostafa_Shaban',
+'رامز جلال':        'Ramez_Galal',
+'دنيا سمير غانم':   'Donia_Samir_Ghanem',
+'يسرا':             'Yousra',
+'نور الشريف':       'Nour_El-Sherif',
+'حسين فهمي':        'Hussein_Fahmy',
+'مصطفى قمر':        'Mostafa_Amar',
+'شيرين عبد الوهاب': 'Sherine',
+
 
   // ── Food ─────────────────────────────────────────────────────────────────
   'كشري':          'Kushari',
   'فول':           'Ful_medames',
   'لحمة مشوية':    'Mixed_grill',           // clear grilled meat image
   'كباب':          'Kebab',
-  'فتة':           'Fattah_(food)',          // Egyptian dish
+  'فتة':           'Fatta',                  // Egyptian dish
   'كنافة':         'Kunafeh',
-  'بقلاوة':        'Baklava',
   'أم علي':        'Om_Ali',
   'ملوخية':        'Mulukhiyah',
   'مكرونة':        'Pasta',
@@ -106,6 +113,7 @@ export const CARD_WIKI_TITLES: Record<string, string> = {
   'بطاطس مقلية':   'French_fries',          // fried, not raw potatoes
   'سلطة':          'Salad',
   'آيس كريم':      'Ice_cream',
+  'بقلاوة':        'Baklava',
 
   // ── People (professions) ─────────────────────────────────────────────────
   'طبيب':      'Physician',

@@ -31,6 +31,10 @@ export function useCardImages(labels: string[]): Record<string, string> {
             if (data.thumbnail?.source) {
               results[label] = data.thumbnail.source;
             }
+            if (!results[label]) {
+              // Use a generic fallback image when Wikipedia thumbnail is unavailable.
+              results[label] = '/fallback.png';
+            }
           } catch {
             // silently skip — card will fall back to emoji
           }

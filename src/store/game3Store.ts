@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { CARD_WIKI_TITLES } from './cardWikiTitles';
 
 export type CardCategory = 'animals' | 'people' | 'egyptian_celebs' | 'football_stars' | 'food';
 
@@ -94,14 +95,16 @@ export const CARD_DATA: Record<CardCategory, string[]> = {
     'خياط', 'حلاق', 'ساحر', 'باعة', 'قاضي', 'دبلوماسي',
   ],
   egyptian_celebs: [
-    'محمد صلاح', 'عمرو دياب', 'أم كلثوم', 'نجيب محفوظ', 'أحمد زكي', 'ليلى علوي',
-    'أبو تريكة', 'عادل إمام', 'محمود ياسين', 'فاتن حمامة', 'رشدي أباظة', 'سعاد حسني',
-    'هاني شاكر', 'طه حسين', 'يوسف إدريس', 'إحسان عبد القدوس', 'سمير غانم',
-    'فريد شوقي', 'شريف عرفة', 'مني زكي', 'أحمد السقا', 'هند صبري', 'كريم عبد العزيز', 'نجاة الصغيرة',
+    'عمرو دياب', 'أم كلثوم', 'نجيب محفوظ', 'عادل إمام', 'رشدي أباظة', 'سعاد حسني',
+    'طه حسين', 'محمد منير', 'سمير غانم', 'إسماعيل يس', 'منى زكي', 'أحمد السقا',
+    'هند صبري', 'كريم عبد العزيز', 'منى الشاذلي', 'إلهام شاهين', 'أحمد حلمي', 'محمد هنيدي',
+    'أحمد عز', 'منة شلبي', 'مي عز الدين', 'محمد رمضان', 'تامر حسني', 'مصطفى شعبان',
+    'رامز جلال', 'دنيا سمير غانم', 'يسرا', 'نور الشريف', 'حسين فهمي', 'مصطفى قمر',
+    'شيرين عبد الوهاب',
   ],
   football_stars: [
     'رونالدو', 'ميسي', 'نيمار', 'مبابي', 'هالاند', 'بنزيمة',
-    'لوكاكو', 'ساكا', 'فينيسيوس', 'ديبالا', 'زيدان', 'سالاح',
+    'لوكاكو', 'ساكا', 'فينيسيوس', 'ديبالا', 'زيدان', 'صلاح',
     'فيرمينو', 'ماني', 'موراتا', 'غريزمان', 'كانسيلو', 'برونو',
     'ثياغو', 'أبو تريكة', 'لامين', 'بيدري', 'غافي', 'بيلينغهام',
   ],
@@ -149,7 +152,16 @@ export function generateRoomCode(): string {
 }
 
 export function buildCards(cat: CardCategory): CardItem[] {
-  const labels = shuffle(CARD_DATA[cat]).slice(0, 24);
+  const shuffled = shuffle(CARD_DATA[cat]);
+  const filtered = shuffled.filter((label) => !!CARD_WIKI_TITLES[label]);
+  const needed = 24;
+  const labels =
+    filtered.length >= needed
+      ? filtered.slice(0, needed)
+      : [
+          ...filtered,
+          ...shuffled.filter((l) => !filtered.includes(l)).slice(0, needed - filtered.length),
+        ];
   return labels.map((label, i) => ({
     id: `card-${i}`,
     categoryId: cat,
