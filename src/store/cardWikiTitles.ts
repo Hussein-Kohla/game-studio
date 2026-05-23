@@ -3,31 +3,31 @@
  * Used to fetch real photo thumbnails via the Wikipedia REST API.
  */
 export const CARD_WIKI_TITLES: Record<string, string> = {
-  // ── Animals ──────────────────────────────────────────────────────────────
+  // ── Animals — solo, clear-face article picks ──────────────────────────────
   'أسد':      'Lion',
   'نمر':      'Tiger',
   'فيل':      'African_bush_elephant',
   'زرافة':    'Giraffe',
-  'حصان':     'Horse',
+  'حصان':     'Arabian_horse',          // solo portrait
   'ديك':      'Rooster',
-  'قط':       'Cat',
-  'كلب':      'Dog',
+  'قط':       'Tabby_cat',              // clear face
+  'كلب':      'Golden_Retriever',       // clean solo photo
   'أرنب':     'Rabbit',
-  'ضفدع':     'Frog',
-  'بومة':     'Owl',
-  'دلفين':    'Dolphin',
+  'ضفدع':     'Red-eyed_tree_frog',     // vibrant & clear
+  'بومة':     'Great_horned_owl',
+  'دلفين':    'Common_bottlenose_dolphin',
   'تمساح':    'Nile_crocodile',
-  'ثعبان':    'Snake',
+  'ثعبان':    'Ball_python',
   'طاووس':    'Indian_peafowl',
-  'فراشة':    'Butterfly',
+  'فراشة':    'Monarch_butterfly',
   'دب':       'Brown_bear',
-  'ذئب':      'Wolf',
+  'ذئب':      'Gray_wolf',
   'قرد':      'Chimpanzee',
   'حمار':     'Donkey',
   'جمل':      'Dromedary',
   'بقرة':     'Cattle',
   'خروف':     'Sheep',
-  'دجاجة':    'Chicken',
+  'دجاجة':    'Leghorn_chicken',        // distinct from rooster
 
   // ── Football Stars ────────────────────────────────────────────────────────
   'رونالدو':   'Cristiano_Ronaldo',
@@ -40,7 +40,7 @@ export const CARD_WIKI_TITLES: Record<string, string> = {
   'ساكا':      'Bukayo_Saka',
   'فينيسيوس':  'Vinícius_Júnior',
   'ديبالا':    'Paulo_Dybala',
-  'كيليان':    'Kylian_Mbappé',
+  'زيدان':     'Zinedine_Zidane',       // replaced كيليان (dup of مبابي)
   'سالاح':     'Mohamed_Salah',
   'فيرمينو':   'Roberto_Firmino',
   'ماني':      'Sadio_Mané',
@@ -49,63 +49,63 @@ export const CARD_WIKI_TITLES: Record<string, string> = {
   'كانسيلو':   'João_Cancelo',
   'برونو':     'Bruno_Fernandes',
   'ثياغو':     'Thiago_Alcântara',
-  'لوكاس':     'Lucas_Paquetá',
+  'أبو تريكة': 'Mohamed_Aboutrika',    // Egyptian legend
   'لامين':     'Lamine_Yamal',
   'بيدري':     'Pedri',
   'غافي':      'Gavi_(footballer)',
   'بيلينغهام': 'Jude_Bellingham',
 
   // ── Egyptian Celebrities ──────────────────────────────────────────────────
-  'محمد صلاح':     'Mohamed_Salah',
-  'عمرو دياب':     'Amr_Diab',
-  'أم كلثوم':      'Umm_Kulthum',
-  'نجيب محفوظ':    'Naguib_Mahfouz',
-  'أحمد زكي':      'Ahmed_Zaki_(actor)',
-  'ليلى علوي':     'Laila_Elwi',
-  'يسرا':          'Yousra_(actress)',
-  'عادل إمام':     'Adel_Imam',
-  'محمود ياسين':   'Mahmoud_Yassin',
-  'فاتن حمامة':    'Faten_Hamama',
-  'رشدي أباظة':    'Rushdy_Abaza',
-  'سعاد حسني':     'Soad_Hosny',
-  'هاني شاكر':     'Hany_Shaker',
-  'علاء مبارك':    'Alaa_Mubarak',
-  'بشير الديك':    'Bashir_El_Dik',
-  'مصطفى فهمي':   'Mostafa_Fahmy_(actor)',
-  'نبيلة عبيد':    'Nabila_Obeid',
-  'سمير غانم':     'Samir_Ghanem',
-  'فريد شوقي':     'Farid_Shawqi',
-  'شريف عرفة':     'Sherif_Arafa',
-  'مني زكي':       'Mona_Zaki',
-  'أحمد السقا':    'Ahmed_El-Sakka',
-  'هند صبري':      'Hend_Sabry',
-  'كريم عبد العزيز': 'Karim_Abdel_Aziz',
+  'محمد صلاح':        'Mohamed_Salah',
+  'عمرو دياب':        'Amr_Diab',
+  'أم كلثوم':         'Umm_Kulthum',
+  'نجيب محفوظ':       'Naguib_Mahfouz',
+  'أحمد زكي':         'Ahmed_Zaki_(actor)',
+  'ليلى علوي':        'Laila_Elwi',
+  // 'أبو تريكة' already listed above — same Wikipedia article works for both lists
+  'عادل إمام':        'Adel_Imam',
+  'محمود ياسين':      'Mahmoud_Yassin',
+  'فاتن حمامة':       'Faten_Hamama',
+  'رشدي أباظة':       'Rushdy_Abaza',
+  'سعاد حسني':        'Soad_Hosny',
+  'هاني شاكر':        'Hany_Shaker',
+  'طه حسين':          'Taha_Hussein',           // Egyptian writer
+  'يوسف إدريس':       'Yusuf_Idris',            // Egyptian writer
+  'إحسان عبد القدوس': 'Ihsan_Abd_al-Quddus',    // Egyptian writer
+  'سمير غانم':        'Samir_Ghanem',
+  'فريد شوقي':        'Farid_Shawqi',
+  'شريف عرفة':        'Sherif_Arafa',
+  'مني زكي':          'Mona_Zaki',
+  'أحمد السقا':       'Ahmed_El-Sakka',
+  'هند صبري':         'Hend_Sabry',
+  'كريم عبد العزيز':  'Karim_Abdel_Aziz',
+  'نجاة الصغيرة':     'Najat_Al_Saghira',       // iconic Egyptian singer
 
   // ── Food ─────────────────────────────────────────────────────────────────
-  'كشري':      'Kushari',
-  'فول':       'Ful_medames',
-  'طعمية':     'Falafel',
-  'كباب':      'Kebab',
-  'مشوي':      'Grilling',
-  'كنافة':     'Kunafeh',
-  'بقلاوة':    'Baklava',
-  'أم علي':    'Om_Ali',
-  'ملوخية':    'Mulukhiyah',
-  'مكرونة':    'Pasta',
-  'بيتزا':     'Pizza',
-  'برجر':      'Hamburger',
-  'سوشي':      'Sushi',
-  'شاورما':    'Shawarma',
-  'فلافل':     'Falafel',
-  'حمص':       'Hummus',
-  'تبولة':     'Tabbouleh',
-  'منسف':      'Mansaf',
-  'كفتة':      'Kofta',
-  'سمك':       'Fish',
-  'جمبري':     'Shrimp',
-  'بطاطس':     'Potato',
-  'سلطة':      'Salad',
-  'آيس كريم':  'Ice_cream',
+  'كشري':          'Kushari',
+  'فول':           'Ful_medames',
+  'لحمة مشوية':    'Mixed_grill',           // clear grilled meat image
+  'كباب':          'Kebab',
+  'فتة':           'Fattah_(food)',          // Egyptian dish
+  'كنافة':         'Kunafeh',
+  'بقلاوة':        'Baklava',
+  'أم علي':        'Om_Ali',
+  'ملوخية':        'Mulukhiyah',
+  'مكرونة':        'Pasta',
+  'بيتزا':         'Pizza',
+  'برجر':          'Hamburger',
+  'سوشي':          'Sushi',
+  'شاورما':        'Shawarma',
+  'فلافل':         'Falafel',
+  'محشي':          'Mahshi',                // Egyptian stuffed veg
+  'حواوشي':        'Hawawshi',             // Egyptian minced meat pastry
+  'مسقعة':         'Moussaka',
+  'كفتة':          'Kofta',
+  'سمك':           'Fish',
+  'جمبري':         'Shrimp',
+  'بطاطس مقلية':   'French_fries',          // fried, not raw potatoes
+  'سلطة':          'Salad',
+  'آيس كريم':      'Ice_cream',
 
   // ── People (professions) ─────────────────────────────────────────────────
   'طبيب':      'Physician',
