@@ -22,8 +22,9 @@ export function Game3Play() {
 
   const navigate = useNavigate();
 
-  const [turnMode, setTurnMode]       = useState<TurnMode>(null);
+  const [turnMode, setTurnMode]         = useState<TurnMode>(null);
   const [guessConfirm, setGuessConfirm] = useState<string | null>(null);
+  const [isFlipped, setIsFlipped]       = useState(false);
 
   useEffect(() => {
     if (!roomCode) navigate('/game3/setup');
@@ -225,25 +226,72 @@ export function Game3Play() {
           })}
         </div>
 
-        {/* ── Secret card — large, right side ── */}
-        <div className="w-32 shrink-0 flex flex-col items-center gap-2">
-          <div className="text-xs text-slate-400 font-semibold tracking-wide text-center">كارتك السري</div>
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-full rounded-2xl bg-gradient-to-br from-[#1a2235] to-[#0f1623] border-2 border-orange-500/60
-                       flex flex-col items-center justify-center gap-3 p-4
-                       shadow-[0_0_30px_rgba(249,115,22,0.25)]"
-            style={{ aspectRatio: '3/4' }}
-          >
-            <div className="text-5xl">{meta?.icon}</div>
-            <div className="text-sm font-black text-white text-center leading-tight px-1">
-              {mySecretCard?.label ?? '—'}
-            </div>
-            <div className="text-[10px] text-orange-400/70 font-semibold">سري 🔒</div>
-          </motion.div>
+        {/* ── Secret card — large flippable, right side ── */}
+        <div className="w-48 shrink-0 flex flex-col items-center gap-3">
+          <h3 className="text-base font-black text-white">كارتك السري</h3>
 
-          {/* Mini legend below secret card */}
+          {/* 3-D flip card */}
+          <div className="w-full" style={{ perspective: '1000px', aspectRatio: '3/4' }}>
+            <motion.div
+              style={{ transformStyle: 'preserve-3d', width: '100%', height: '100%', position: 'relative' }}
+              animate={{ rotateY: isFlipped ? 180 : 0 }}
+              transition={{ duration: 0.55, type: 'spring', stiffness: 180, damping: 22 }}
+            >
+              {/* Back face */}
+              <div
+                onClick={() => mySecretCard && setIsFlipped(true)}
+                style={{ backfaceVisibility: 'hidden' }}
+                className={`absolute inset-0 rounded-3xl border-2 flex flex-col items-center justify-center gap-4 p-4
+                  bg-gradient-to-br from-[#111827] to-[#0c1220]
+                  ${mySecretCard
+                    ? 'border-orange-500/60 shadow-[0_0_35px_rgba(249,115,22,0.2)] cursor-pointer'
+                    : 'border-white/10 cursor-default'
+                  }`}
+              >
+                <div className="grid grid-cols-3 gap-1.5 opacity-10">
+                  {Array.from({ length: 9 }).map((_, k) => (
+                    <div key={k} className="w-3 h-3 rounded-full bg-orange-400" />
+                  ))}
+                </div>
+                <div className="text-4xl opacity-20">🎴</div>
+                <div className="text-xs text-white/20 font-semibold tracking-wide">مقلوب</div>
+              </div>
+
+              {/* Front face */}
+              <div
+                onClick={() => setIsFlipped(false)}
+                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                className="absolute inset-0 rounded-3xl border-2 border-orange-500 flex flex-col items-center justify-center gap-3 p-4
+                  bg-gradient-to-br from-[#1a2235] to-[#0f1623]
+                  shadow-[0_0_40px_rgba(249,115,22,0.35)] cursor-pointer"
+              >
+                <div className="text-6xl">{meta?.icon}</div>
+                <div className="text-lg font-black text-white text-center leading-tight px-1">
+                  {mySecretCard?.label ?? '—'}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Lock button */}
+          <motion.button
+            onClick={() => mySecretCard && setIsFlipped(f => !f)}
+            whileHover={mySecretCard ? { scale: 1.12 } : {}}
+            whileTap={mySecretCard ? { scale: 0.93 } : {}}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300
+              ${isFlipped
+                ? 'bg-green-500/20 border-2 border-green-400/70 shadow-[0_0_18px_rgba(34,197,94,0.35)]'
+                : 'bg-orange-500/15 border-2 border-orange-500/50 shadow-[0_0_18px_rgba(249,115,22,0.2)]'
+              }
+              ${!mySecretCard ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'}`}
+          >
+            {isFlipped ? '🔓' : '🔒'}
+          </motion.button>
+          <p className="text-[11px] text-slate-500 text-center">
+            {isFlipped ? 'اضغط للإخفاء' : 'اضغط للكشف'}
+          </p>
+
+          {/* Mini legend */}
           <div className="mt-auto flex flex-col gap-1 text-[10px] text-slate-500 w-full">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-white/30 inline-block shrink-0" /> متاح</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-black/50 border border-white/10 inline-block shrink-0" /> مستبعد</span>
