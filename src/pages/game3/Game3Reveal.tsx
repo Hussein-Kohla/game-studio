@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useCardImages } from '../../hooks/useCardImages';
 
 export function Game3Reveal() {
   const { roomCode, myPlayerId } = useGame3Store();
@@ -54,6 +55,10 @@ export function Game3Reveal() {
   const { cards, selectedCategory } = room;
   const meta = selectedCategory ? CATEGORY_META[selectedCategory as keyof typeof CATEGORY_META] : null;
 
+  /* ── Fetch Wikipedia images for all card labels ── */
+  const cardLabels  = cards.map((c: any) => c.label as string);
+  const cardImages  = useCardImages(cardLabels);
+
   /* ── Handlers ── */
   const handleSelectCard = (cardId: string) => {
     setSecretCardMut({ roomCode: roomCode!, team: myTeam, cardId });
@@ -90,6 +95,7 @@ export function Game3Reveal() {
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 flex-1 content-start">
           {cards.map((card: any, i: number) => {
             const isSelected = card.id === mySecretCardId;
+            const imgUrl     = cardImages[card.label];
             return (
               <motion.div
                 key={card.id}
@@ -97,15 +103,34 @@ export function Game3Reveal() {
                 initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
                 animate={{ opacity: 1, scale: 1, rotateY: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.03 }}
-                className={`aspect-[3/4] rounded-xl flex flex-col items-center justify-center p-2 shadow-lg transition-all cursor-pointer hover:scale-105 ${
+                className={`aspect-[3/4] rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-lg transition-all cursor-pointer hover:scale-105 ${
                   isSelected
-                    ? 'bg-gradient-to-br from-orange-500/40 to-red-600/40 border-2 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]'
-                    : 'bg-gradient-to-br from-[#1a2235] to-[#0f1623] border border-white/10 hover:border-white/30'
+                    ? 'border-2 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]'
+                    : 'border border-white/10 hover:border-white/30'
                 }`}
               >
-                <div className="text-2xl mb-1">{meta?.icon}</div>
-                <span className="text-white font-bold text-xs text-center leading-tight">{card.label}</span>
-                <div className="mt-1 text-[10px] text-slate-500">#{i + 1}</div>
+                {/* Photo or emoji */}
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={card.label}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="text-3xl mb-1">{meta?.icon}</div>
+                )}
+                {/* Dark overlay + label */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-1.5">
+                  <span className="text-white font-bold text-[10px] text-center leading-tight block drop-shadow-lg">{card.label}</span>
+                  <div className="text-[9px] text-white/40 text-center">#{i + 1}</div>
+                </div>
+                {isSelected && (
+                  <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
+                    <div className="text-2xl">✅</div>
+                  </div>
+                )}
               </motion.div>
             );
           })}

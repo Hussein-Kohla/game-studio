@@ -6,6 +6,7 @@ import Confetti from 'react-confetti';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
+import { useCardImages } from '../../hooks/useCardImages';
 
 type TurnMode = null | 'question' | 'guess';
 
@@ -61,6 +62,10 @@ export function Game3Play() {
   const mySecretCardId = secretCards[myTeam];
   // @ts-ignore
   const mySecretCard   = cards.find(c => c.id === mySecretCardId);
+
+  /* ── Wikipedia images for all cards ── */
+  const cardLabels = (cards as { label: string }[]).map(c => c.label);
+  const cardImages = useCardImages(cardLabels);
 
   /* ── Handlers ─────────────────────────────────────────────────────────── */
 
@@ -196,6 +201,7 @@ export function Game3Play() {
             const isEliminated = eliminatedCards[myTeam].includes(card.id);
             const isSelected   = guessConfirm === card.id;
             const isGuessMode  = turnMode === 'guess';
+            const imgUrl       = cardImages[card.label];
 
             return (
               <motion.div
@@ -203,24 +209,57 @@ export function Game3Play() {
                 layout
                 onClick={() => handleCardClick(card.id)}
                 className={`
-                  aspect-[3/4] rounded-xl flex flex-col items-center justify-center p-1.5 relative overflow-hidden transition-all duration-300
+                  aspect-[3/4] rounded-xl relative overflow-hidden transition-all duration-300
                   ${isEliminated
-                    ? 'bg-black/50 border border-white/5 opacity-30 grayscale cursor-pointer'
+                    ? 'opacity-25 grayscale cursor-pointer'
                     : isSelected
-                      ? 'border-2 border-yellow-400 bg-yellow-500/15 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
+                      ? 'ring-2 ring-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
                       : isGuessMode && isMyTurn
-                        ? 'border border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-400/70 hover:scale-105 cursor-pointer'
+                        ? 'ring-1 ring-yellow-500/50 hover:ring-yellow-400 hover:scale-105 cursor-pointer'
                         : turnMode === 'question' && isMyTurn
-                          ? 'border border-white/10 bg-gradient-to-br from-[#1a2235] to-[#0f1623] hover:border-white/30 hover:bg-[#1e2a40] cursor-pointer hover:scale-105'
-                          : 'border border-white/10 bg-gradient-to-br from-[#1a2235] to-[#0f1623]'
+                          ? 'ring-1 ring-white/10 hover:ring-white/30 hover:scale-105 cursor-pointer'
+                          : 'ring-1 ring-white/10'
                   }
                 `}
               >
-                <div className="absolute top-1 left-1 text-[9px] text-slate-600 font-mono">{i + 1}</div>
-                <div className="text-xl mb-1">{meta?.icon}</div>
-                <span className="text-white font-bold text-[11px] text-center leading-tight">{card.label}</span>
-                {isSelected   && <div className="text-yellow-400 text-xs mt-1 animate-bounce">؟</div>}
-                {isEliminated && <div className="absolute inset-0 flex items-center justify-center text-red-500/50 text-4xl font-black">X</div>}
+                {/* Photo or fallback bg */}
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={card.label}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a2235] to-[#0f1623] flex items-center justify-center text-3xl">
+                    {meta?.icon}
+                  </div>
+                )}
+
+                {/* Gradient overlay for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+
+                {/* Number tag */}
+                <div className="absolute top-1 left-1 text-[8px] text-white/40 font-mono">{i + 1}</div>
+
+                {/* Label */}
+                <div className="absolute bottom-0 left-0 right-0 p-1.5 text-center">
+                  <span className="text-white font-bold text-[10px] leading-tight drop-shadow-lg">{card.label}</span>
+                </div>
+
+                {/* Guess selection indicator */}
+                {isSelected && (
+                  <div className="absolute inset-0 bg-yellow-500/20 flex items-start justify-end p-1">
+                    <div className="text-yellow-400 text-sm animate-bounce">؟</div>
+                  </div>
+                )}
+
+                {/* Eliminated X */}
+                {isEliminated && (
+                  <div className="absolute inset-0 flex items-center justify-center text-red-500/60 text-4xl font-black bg-black/40">
+                    X
+                  </div>
+                )}
               </motion.div>
             );
           })}
