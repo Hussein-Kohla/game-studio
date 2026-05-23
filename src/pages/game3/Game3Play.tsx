@@ -7,6 +7,12 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
 import { useCardImages } from '../../hooks/useCardImages';
+import {
+  playCardFlipSound,
+  playCardMatchSound,
+  playEndTurnSound,
+  playWinSound,
+} from '../../utils/sounds';
 
 type TurnMode = null | 'question' | 'guess';
 
@@ -42,6 +48,10 @@ export function Game3Play() {
     setGuessConfirm(null);
   }, [room?.currentTurn]);
 
+  useEffect(() => {
+    if (room?.phase === 'gameover') playWinSound();
+  }, [room?.phase]);
+
   if (!room) return <div className="p-10 text-white text-center">جاري التحميل...</div>;
 
   const { cards, scores, currentTurn, players, selectedCategory, phase, secretCards, eliminatedCards, winner } = room;
@@ -75,18 +85,21 @@ export function Game3Play() {
     if (turnMode === 'guess') {
       setGuessConfirm(prev => (prev === cardId ? null : cardId));
     } else if (turnMode === 'question') {
+      playCardFlipSound();
       flipCardMut({ roomCode: roomCode!, team: myTeam, cardId });
     }
   };
 
   const confirmGuess = () => {
     if (!guessConfirm) return;
+    playCardMatchSound();
     guessCardMut({ roomCode: roomCode!, guessingTeam: myTeam, cardId: guessConfirm });
     setGuessConfirm(null);
     setTurnMode(null);
   };
 
   const handleEndTurn = () => {
+    playEndTurnSound();
     endTurnMut({ roomCode: roomCode! });
     setTurnMode(null);
     setGuessConfirm(null);

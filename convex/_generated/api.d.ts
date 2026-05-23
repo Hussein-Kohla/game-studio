@@ -11,6 +11,9 @@
 import type * as game3 from "../game3.js";
 import type * as http from "../http.js";
 import type * as images from "../images.js";
+import type * as imposter from "../imposter.js";
+import type * as imposterCategories from "../imposterCategories.js";
+import type * as imposterData from "../imposterData.js";
 import type * as prompts from "../prompts.js";
 import type * as promptsData from "../promptsData.js";
 import type * as seed from "../seed.js";
@@ -27,6 +30,9 @@ declare const fullApi: ApiFromModules<{
   game3: typeof game3;
   http: typeof http;
   images: typeof images;
+  imposter: typeof imposter;
+  imposterCategories: typeof imposterCategories;
+  imposterData: typeof imposterData;
   prompts: typeof prompts;
   promptsData: typeof promptsData;
   seed: typeof seed;

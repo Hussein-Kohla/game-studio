@@ -5,6 +5,7 @@ import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useCardImages } from '../../hooks/useCardImages';
+import { playUnlockSound } from '../../utils/sounds';
 
 export function Game3Reveal() {
   const { roomCode, myPlayerId } = useGame3Store();
@@ -153,7 +154,12 @@ export function Game3Reveal() {
             >
               {/* Back face */}
               <div
-                onClick={() => mySecretCard && setIsFlipped(true)}
+                onClick={() => {
+                  if (mySecretCard) {
+                    playUnlockSound();
+                    setIsFlipped(true);
+                  }
+                }}
                 style={{ backfaceVisibility: 'hidden' }}
                 className={`absolute inset-0 rounded-3xl border-2 flex flex-col items-center justify-center gap-4 p-4
                   bg-gradient-to-br from-[#111827] to-[#0c1220]

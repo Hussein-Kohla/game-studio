@@ -1,29 +1,24 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+export const GROUP_SIZE = 50;
+
 export default defineSchema({
   words: defineTable({
     word: v.string(),
     lang: v.string(), // "ar" or "en"
     forbiddenWords: v.array(v.string()),
-  }).index("by_lang", ["lang"]),
-  
-  used_words: defineTable({
-    word: v.string(),
-    lang: v.string(),
-    forbiddenWords: v.array(v.string()),
-  }),
-  
-  prompts: defineTable({
-    text: v.string(),        // Arabic display text
-    textEn: v.string(),      // English text for image generation
-  }),
+    groupId: v.optional(v.number()),
+  })
+    .index("by_lang", ["lang"])
+    .index("by_lang_group", ["lang", "groupId"]),
 
-  used_prompts: defineTable({
+  prompts: defineTable({
     text: v.string(),
     textEn: v.string(),
-  }),
-  
+    groupId: v.optional(v.number()),
+  }).index("by_group", ["groupId"]),
+
   gameState: defineTable({
     gameId: v.string(),
     teams: v.any(),
@@ -63,6 +58,12 @@ export default defineSchema({
     }),
     winner: v.union(v.literal('red'), v.literal('green'), v.null()),
     currentTurn: v.union(v.literal('red'), v.literal('green')),
-    revealStartTime: v.optional(v.number()), // To sync the countdown
+    revealStartTime: v.optional(v.number()),
   }).index("by_roomCode", ["roomCode"]),
+
+  imposterWords: defineTable({
+    categoryId: v.string(),
+    word: v.string(),
+    impostorWord: v.string(),
+  }).index("by_category", ["categoryId"]),
 });

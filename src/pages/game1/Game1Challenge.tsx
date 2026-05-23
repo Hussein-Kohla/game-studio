@@ -14,7 +14,7 @@ export function Game1Challenge() {
   const boxId = Number(searchParams.get('box'));
   const navigate = useNavigate();
 
-  const { teams, currentTeamIndex, openBox, addScore, nextTurn } = useGame1Store();
+  const { teams, currentTeamIndex, selectedGroupId, openBox, addScore, nextTurn } = useGame1Store();
   const currentTeam = teams[currentTeamIndex];
 
   const popPrompt = useMutation(api.prompts.popRandomPrompt);
@@ -76,34 +76,48 @@ export function Game1Challenge() {
     }
   };
 
-  const fetchPrompt = async () => {
+  const fetchPrompt = useCallback(async () => {
+    const { selectedGroupId: groupId, usedPrompts, markPromptUsed } = useGame1Store.getState();
+
+    if (groupId === null) {
+      navigate('/game1/setup');
+      return;
+    }
+
     setActivePrompt(null);
     setIsEmpty(false);
     setImgUrl('');
     setIsModalOpen(false);
+    setWheelResult(null);
+    setForcedLieWord(null);
 
     try {
-      const dbPrompt = await popPrompt();
+      const dbPrompt = await popPrompt({ groupId, exclude: usedPrompts });
       if (dbPrompt) {
+        markPromptUsed(dbPrompt.text);
         setActivePrompt({ text: dbPrompt.text, textEn: dbPrompt.textEn });
         loadImage(dbPrompt.textEn);
       } else {
-        toast.error('نفدت الأفكار من قاعدة البيانات!', { icon: '⚠️' });
+        const msg =
+          usedPrompts.length > 0
+            ? 'استُخدمت كل أفكار هذه المجموعة في هذه الجلسة! ابدأ لعبة جديدة أو اختر مجموعة أخرى.'
+            : 'المجموعة فارغة في قاعدة البيانات!';
+        toast.error(msg, { icon: '⚠️' });
         setIsEmpty(true);
       }
-    } catch (e) {
+    } catch {
       toast.error('حدث خطأ في الاتصال بقاعدة البيانات.', { icon: '❌' });
       setIsEmpty(true);
     }
-  };
+  }, [popPrompt, navigate]);
 
   useEffect(() => {
     fetchPrompt();
-  }, []);
+  }, [fetchPrompt]);
 
-  const refreshPrompt = useCallback(() => {
+  const refreshPrompt = () => {
     fetchPrompt();
-  }, [popPrompt]);
+  };
 
   const handleSpinComplete = (result: 'truth' | 'lie') => {
     setWheelResult(result);

@@ -1,20 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
 import toast from 'react-hot-toast';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useGame2Store } from '../../store/game2Store';
-import { playCorrectSound, playWrongSound } from '../../utils/sounds';
+import { playCorrectSound, playWrongSound, playWinSound } from '../../utils/sounds';
 
-
-
-// Alarm bell sound
 function playAlarmSound() {
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -32,44 +30,91 @@ function playAlarmSound() {
 }
 
 export function Game2Play() {
-  const { teams, currentTeamIndex, addScore, nextTurn } = useGame2Store();
+  const {
+    teams,
+    currentTeamIndex,
+    selectedGroupId,
+    groupWordCount,
+    usedWords,
+    isGameOver,
+    markWordUsed,
+    addScore,
+    nextTurn,
+    endGame,
+    resetGame,
+  } = useGame2Store();
   const navigate = useNavigate();
   const currentTeam = teams[currentTeamIndex];
 
-  // Fetch and delete random word from Convex DB
   const popWord = useMutation(api.words.popRandomWord);
 
-  // Active word — prefer DB, fallback to local
   const [wordData, setWordData] = useState<{ word: string; forbiddenWords: string[] } | null>(null);
   const [animKey, setAnimKey] = useState(0);
-  const [fromDB, setFromDB] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dbEmpty, setDbEmpty] = useState(false);
 
-  const fetchWord = async () => {
+  const finishGame = useCallback(() => {
+    endGame();
+    playWinSound();
+    toast('انتهت كلمات المجموعة!', { icon: '🏁', duration: 4000 });
+  }, [endGame]);
+
+  const fetchWord = useCallback(async () => {
+    if (selectedGroupId === null) {
+      navigate('/game2/setup');
+      return;
+    }
+    if (isGameOver) return;
+
+    if (groupWordCount > 0 && usedWords.length >= groupWordCount) {
+      finishGame();
+      return;
+    }
+
+    setIsLoading(true);
     setWordData(null);
-    setIsEmpty(false);
+    setDbEmpty(false);
+
     try {
-      const dbWord = await popWord({ lang: 'ar' });
+      const dbWord = await popWord({
+        lang: 'ar',
+        groupId: selectedGroupId,
+        exclude: usedWords,
+      });
+
       if (dbWord) {
         setWordData({ word: dbWord.word, forbiddenWords: dbWord.forbiddenWords });
-        setFromDB(true);
+        markWordUsed(dbWord.word);
+      } else if (usedWords.length > 0) {
+        finishGame();
       } else {
-        toast.error("نفدت الكلمات من قاعدة البيانات! قم بتشغيل سكريبت التوليد.", { icon: '⚠️' });
-        setIsEmpty(true);
+        toast.error('المجموعة فارغة في قاعدة البيانات!', { icon: '⚠️' });
+        setDbEmpty(true);
       }
-    } catch (e) {
-      toast.error("حدث خطأ في الاتصال بقاعدة البيانات.", { icon: '❌' });
-      setIsEmpty(true);
+    } catch {
+      toast.error('حدث خطأ في الاتصال بقاعدة البيانات.', { icon: '❌' });
+      setDbEmpty(true);
+    } finally {
+      setIsLoading(false);
+      setAnimKey((k) => k + 1);
     }
-    setAnimKey(k => k + 1);
-  };
+  }, [
+    selectedGroupId,
+    isGameOver,
+    groupWordCount,
+    usedWords,
+    popWord,
+    markWordUsed,
+    finishGame,
+    navigate,
+  ]);
 
-  // Set initial word
   useEffect(() => {
-    if (!wordData) fetchWord();
+    if (!wordData && !isGameOver && !dbEmpty && teams.length > 0) {
+      fetchWord();
+    }
   }, []);
 
-  // Timer state
   const [timerMins, setTimerMins] = useState(1);
   const [timerSecs, setTimerSecs] = useState(30);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -84,9 +129,9 @@ export function Game2Play() {
   };
 
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || isGameOver) return;
     const id = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev === null || prev <= 0) return 0;
         if (prev <= 1) {
           clearInterval(id);
@@ -100,14 +145,19 @@ export function Game2Play() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [isRunning]);
+  }, [isRunning, isGameOver]);
 
-  const resetTimer = () => { stopTimer(); setTimeLeft(null); };
+  const resetTimer = () => {
+    stopTimer();
+    setTimeLeft(null);
+  };
+
   const toggleTimer = () => {
+    if (isGameOver) return;
     if (isRunning) {
       stopTimer();
     } else {
-      setTimeLeft(prev => prev !== null ? prev : totalSeconds);
+      setTimeLeft((prev) => (prev !== null ? prev : totalSeconds));
       setIsRunning(true);
     }
   };
@@ -118,16 +168,20 @@ export function Game2Play() {
   const isLow = timeLeft !== null && timeLeft <= 10 && timeLeft > 0;
   const isDone = timeLeft === 0;
 
-  if (teams.length === 0) {
+  if (teams.length === 0 || selectedGroupId === null) {
     navigate('/game2/setup');
     return null;
   }
 
   const loadNextWord = () => {
+    if (isGameOver) return;
+    stopTimer();
+    resetTimer();
     fetchWord();
   };
 
   const handleCorrect = () => {
+    if (isGameOver) return;
     playCorrectSound();
     addScore(currentTeam.id, 1);
     toast.success('إجابة صحيحة!', { icon: '👏' });
@@ -135,11 +189,13 @@ export function Game2Play() {
   };
 
   const handleNewWord = () => {
+    if (isGameOver) return;
     playWrongSound();
     loadNextWord();
   };
 
   const handleEndTurn = () => {
+    if (isGameOver) return;
     stopTimer();
     resetTimer();
     nextTurn();
@@ -147,12 +203,51 @@ export function Game2Play() {
     toast('انتهى الدور!', { icon: '🔄' });
   };
 
+  if (isGameOver) {
+    const sorted = [...teams].sort((a, b) => b.score - a.score);
+    const winner = sorted[0];
+    const isTie = teams[0].score === teams[1].score;
+
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-700 min-h-[70vh]">
+        <Confetti numberOfPieces={400} recycle={false} gravity={0.15} />
+        <p className="text-slate-400 text-lg mb-2 z-10">انتهت مجموعة {selectedGroupId} — استُخدمت كل الكلمات</p>
+        <h1 className="text-5xl md:text-6xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500 drop-shadow-lg z-10">
+          {isTie ? 'تعادل!' : `الفائز: ${winner.name}!`}
+        </h1>
+        <p className="text-2xl text-slate-300 mb-4 z-10">
+          النتيجة: {teams[0].name} {teams[0].score} — {teams[1].score} {teams[1].name}
+        </p>
+        <p className="text-slate-500 mb-12 z-10">
+          {usedWords.length} كلمة من {groupWordCount}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 z-10">
+          <button
+            onClick={() => {
+              resetGame();
+              navigate('/game2/setup');
+            }}
+            className="bg-purple-600 hover:bg-purple-500 text-white px-8 py-4 rounded-xl font-bold text-xl transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+          >
+            لعب مجموعة جديدة
+          </button>
+          <Link
+            to="/"
+            onClick={() => resetGame()}
+            className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-bold text-xl backdrop-blur-md border border-white/20 transition-all"
+          >
+            الصفحة الرئيسية
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const isBlue = currentTeam.color === 'blue';
+  const wordsProgress = groupWordCount > 0 ? `${usedWords.length} / ${groupWordCount}` : null;
 
   return (
     <div className="flex-1 flex flex-col p-6 max-w-4xl mx-auto w-full">
-
-      {/* Scoreboard */}
       <div className="flex justify-between items-center mb-6 gap-4">
         {teams.map((team, index) => {
           const isCurrent = index === currentTeamIndex;
@@ -166,20 +261,29 @@ export function Game2Play() {
                   : 'bg-white/5 border border-white/10 opacity-60'
               }`}
             >
-              <h3 className={`text-xl font-bold ${teamIsBlue ? 'text-blue-400' : 'text-purple-400'}`}>{team.name}</h3>
+              <h3 className={`text-xl font-bold ${teamIsBlue ? 'text-blue-400' : 'text-purple-400'}`}>
+                {team.name}
+              </h3>
               <p className="text-3xl font-black">{team.score}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Timer Widget */}
+      {wordsProgress && (
+        <p className="text-center text-slate-500 text-sm mb-4">
+          كلمات المجموعة {selectedGroupId}: {wordsProgress}
+        </p>
+      )}
+
       <div className="mb-6 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
         <div className="flex items-center gap-3 flex-1">
           <span className={`text-4xl ${isDone ? 'animate-bounce' : isLow ? 'animate-pulse' : ''}`}>⏰</span>
-          <div className={`text-5xl font-black tabular-nums transition-colors ${
-            isDone ? 'text-red-400' : isLow ? 'text-orange-400 animate-pulse' : 'text-white'
-          }`}>
+          <div
+            className={`text-5xl font-black tabular-nums transition-colors ${
+              isDone ? 'text-red-400' : isLow ? 'text-orange-400 animate-pulse' : 'text-white'
+            }`}
+          >
             {String(displayMins).padStart(2, '0')}:{String(displaySecs).padStart(2, '0')}
           </div>
         </div>
@@ -188,16 +292,24 @@ export function Game2Play() {
           <div className="flex items-center gap-2 text-slate-300">
             <div className="flex flex-col items-center">
               <span className="text-xs text-slate-500 mb-1">دقائق</span>
-              <input type="number" min={0} max={9} value={timerMins}
-                onChange={e => setTimerMins(Math.max(0, Math.min(9, Number(e.target.value))))}
+              <input
+                type="number"
+                min={0}
+                max={9}
+                value={timerMins}
+                onChange={(e) => setTimerMins(Math.max(0, Math.min(9, Number(e.target.value))))}
                 className="w-14 text-center bg-black/40 border border-white/20 rounded-lg p-2 text-xl font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
             <span className="text-2xl font-black mt-4">:</span>
             <div className="flex flex-col items-center">
               <span className="text-xs text-slate-500 mb-1">ثواني</span>
-              <input type="number" min={0} max={59} value={timerSecs}
-                onChange={e => setTimerSecs(Math.max(0, Math.min(59, Number(e.target.value))))}
+              <input
+                type="number"
+                min={0}
+                max={59}
+                value={timerSecs}
+                onChange={(e) => setTimerSecs(Math.max(0, Math.min(59, Number(e.target.value))))}
                 className="w-14 text-center bg-black/40 border border-white/20 rounded-lg p-2 text-xl font-bold text-white outline-none focus:border-purple-500"
               />
             </div>
@@ -205,15 +317,20 @@ export function Game2Play() {
         )}
 
         <div className="flex gap-2">
-          <button onClick={toggleTimer} disabled={isDone}
+          <button
+            onClick={toggleTimer}
+            disabled={isDone}
             className={`px-5 py-2 rounded-xl font-bold text-white transition-all ${
               isRunning ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'
-            } disabled:opacity-40`}>
+            } disabled:opacity-40`}
+          >
             {isRunning ? '⏸ إيقاف' : '▶ بدء'}
           </button>
           {(isRunning || timeLeft !== null) && (
-            <button onClick={resetTimer}
-              className="px-4 py-2 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 transition-all">
+            <button
+              onClick={resetTimer}
+              className="px-4 py-2 rounded-xl font-bold text-white bg-white/10 hover:bg-white/20 transition-all"
+            >
               ↺
             </button>
           )}
@@ -227,7 +344,6 @@ export function Game2Play() {
         </h2>
       </div>
 
-      {/* Word Card */}
       <div className="flex-1 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -239,16 +355,16 @@ export function Game2Play() {
             className="w-full max-w-md"
           >
             <Card glow={currentTeam.color as 'blue' | 'purple'} className="flex flex-col items-center p-8 bg-[#111827]">
-              {!wordData && !isEmpty ? (
+              {isLoading ? (
                 <div className="py-16 flex flex-col items-center gap-3">
                   <div className="w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
                   <p className="text-slate-400">جاري تحميل الكلمة...</p>
                 </div>
-              ) : isEmpty ? (
+              ) : dbEmpty ? (
                 <div className="py-16 flex flex-col items-center gap-3 text-center">
                   <span className="text-6xl mb-2">⚠️</span>
-                  <h2 className="text-2xl font-bold text-red-400">نفدت الكلمات!</h2>
-                  <p className="text-slate-400">قاعدة البيانات فارغة. الرجاء تشغيل سكريبت التوليد لإضافة كلمات جديدة.</p>
+                  <h2 className="text-2xl font-bold text-red-400">المجموعة فارغة</h2>
+                  <p className="text-slate-400">لا توجد كلمات في هذه المجموعة. اختر مجموعة أخرى أو شغّل migrateToGroups.</p>
                 </div>
               ) : wordData ? (
                 <>
@@ -256,12 +372,7 @@ export function Game2Play() {
                     <span className="text-sm font-bold text-slate-400 uppercase tracking-widest block mb-2">
                       الكلمة المطلوب شرحها
                     </span>
-                    <h1 className="text-5xl md:text-6xl font-black text-white drop-shadow-md">
-                      {wordData.word}
-                    </h1>
-                    {fromDB && (
-                      <p className="text-xs text-green-400/60 mt-2">✨ مولّدة بالذكاء الاصطناعي</p>
-                    )}
+                    <h1 className="text-5xl md:text-6xl font-black text-white drop-shadow-md">{wordData.word}</h1>
                   </div>
                   <div className="w-full border-t border-white/10 pt-6">
                     <span className="text-sm font-bold text-red-400 block mb-4 text-center">
@@ -269,7 +380,10 @@ export function Game2Play() {
                     </span>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {wordData.forbiddenWords.map((fw, i) => (
-                        <span key={i} className="bg-red-500/20 text-red-200 px-4 py-2 rounded-full font-bold border border-red-500/30">
+                        <span
+                          key={i}
+                          className="bg-red-500/20 text-red-200 px-4 py-2 rounded-full font-bold border border-red-500/30"
+                        >
                           {fw}
                         </span>
                       ))}
@@ -282,15 +396,22 @@ export function Game2Play() {
         </AnimatePresence>
       </div>
 
-      {/* Controls */}
-      <div className="mt-6 flex justify-center gap-4">
-        <Button variant="danger" size="lg" onClick={handleEndTurn}>إنهاء الدور</Button>
-        <Button variant="ghost" size="lg"
+      <div className="mt-6 flex justify-center gap-4 flex-wrap">
+        <Button variant="danger" size="lg" onClick={handleEndTurn} disabled={isLoading}>
+          إنهاء الدور
+        </Button>
+        <Button
+          variant="ghost"
+          size="lg"
           className="border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10"
-          onClick={handleNewWord}>
+          onClick={handleNewWord}
+          disabled={isLoading}
+        >
           🔄 كلمة جديدة
         </Button>
-        <Button variant="primary" size="lg" onClick={handleCorrect}>إجابة صحيحة</Button>
+        <Button variant="primary" size="lg" onClick={handleCorrect} disabled={isLoading || !wordData}>
+          إجابة صحيحة
+        </Button>
       </div>
     </div>
   );

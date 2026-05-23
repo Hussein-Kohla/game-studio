@@ -11,6 +11,12 @@ import { Game3Setup } from './pages/game3/Game3Setup';
 import { Game3Room } from './pages/game3/Game3Room';
 import { Game3Reveal } from './pages/game3/Game3Reveal';
 import { Game3Play } from './pages/game3/Game3Play';
+import { Game4Setup } from './pages/game4/Game4Setup';
+import { Game4Category } from './pages/game4/Game4Category';
+import { Game4Reveal } from './pages/game4/Game4Reveal';
+import { Game4Questions } from './pages/game4/Game4Questions';
+import { Game4Vote } from './pages/game4/Game4Vote';
+import { Game4Results } from './pages/game4/Game4Results';
 
 function App() {
   return (
@@ -35,6 +41,14 @@ function App() {
             <Route path="/game3/room" element={<Game3Room />} />
             <Route path="/game3/reveal" element={<Game3Reveal />} />
             <Route path="/game3/play" element={<Game3Play />} />
+
+            {/* Game 4 — Imposter */}
+            <Route path="/game4/setup" element={<Game4Setup />} />
+            <Route path="/game4/category" element={<Game4Category />} />
+            <Route path="/game4/reveal" element={<Game4Reveal />} />
+            <Route path="/game4/questions" element={<Game4Questions />} />
+            <Route path="/game4/vote" element={<Game4Vote />} />
+            <Route path="/game4/results" element={<Game4Results />} />
           </Routes>
         </main>
       </div>

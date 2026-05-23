@@ -8,7 +8,7 @@ import { playWinSound } from '../../utils/sounds';
 import { useEffect } from 'react';
 
 export function Game1Board() {
-  const { teams, boxes, currentTeamIndex } = useGame1Store();
+  const { teams, boxes, currentTeamIndex, selectedGroupId } = useGame1Store();
   const navigate = useNavigate();
 
   const isGameOver = boxes.every(b => b.isUsed);
@@ -19,7 +19,7 @@ export function Game1Board() {
     }
   }, [isGameOver]);
 
-  if (teams.length === 0) {
+  if (teams.length === 0 || selectedGroupId === null) {
     navigate('/game1/setup');
     return null;
   }

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface Team {
   id: string;
@@ -18,7 +18,10 @@ interface Game1State {
   teams: Team[];
   boxes: Box[];
   currentTeamIndex: number;
-  setTeams: (teams: Team[]) => void;
+  selectedGroupId: number | null;
+  usedPrompts: string[];
+  setTeams: (teams: Team[], groupId: number) => void;
+  markPromptUsed: (text: string) => void;
   openBox: (boxId: number, teamId: string) => void;
   addScore: (teamId: string, points: number) => void;
   nextTurn: () => void;
@@ -36,8 +39,24 @@ export const useGame1Store = create<Game1State>()(
       teams: [],
       boxes: initialBoxes,
       currentTeamIndex: 0,
-      
-      setTeams: (teams) => set({ teams, boxes: initialBoxes, currentTeamIndex: 0 }),
+      selectedGroupId: null,
+      usedPrompts: [],
+
+      setTeams: (teams, groupId) =>
+        set({
+          teams,
+          selectedGroupId: groupId,
+          usedPrompts: [],
+          boxes: initialBoxes,
+          currentTeamIndex: 0,
+        }),
+
+      markPromptUsed: (text) =>
+        set((state) => ({
+          usedPrompts: state.usedPrompts.includes(text)
+            ? state.usedPrompts
+            : [...state.usedPrompts, text],
+        })),
       
       openBox: (boxId, teamId) => set((state) => ({
         boxes: state.boxes.map((box) => 
@@ -55,10 +74,18 @@ export const useGame1Store = create<Game1State>()(
         currentTeamIndex: (state.currentTeamIndex + 1) % state.teams.length
       })),
       
-      resetGame: () => set({ teams: [], boxes: initialBoxes, currentTeamIndex: 0 }),
+      resetGame: () =>
+        set({
+          teams: [],
+          boxes: initialBoxes,
+          currentTeamIndex: 0,
+          selectedGroupId: null,
+          usedPrompts: [],
+        }),
     }),
     {
       name: 'party-game1-storage',
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );
