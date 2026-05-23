@@ -6,7 +6,6 @@ import Confetti from 'react-confetti';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
-import type { CardItem } from '../../store/game3Store';
 export function Game3Play() {
   const {
     roomCode, myPlayerId,
@@ -175,7 +174,7 @@ export function Game3Play() {
 
       {/* Cards Grid 4×6 */}
       <div className="grid grid-cols-6 gap-2 flex-1">
-        {cards.map((card: CardItem, i: number) => {
+        {cards.map((card, i: number) => {
           const isEliminated = eliminatedCards[myTeam].includes(card.id);
           const isSelected = guessConfirm === card.id;
 

@@ -104,7 +104,7 @@ export function Game3Room() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * i }}
               disabled={!isHost}
-              onClick={() => isHost && selectCategoryMut({ roomCode: roomCode!, category: key, cards: buildCards(key) })}
+              onClick={() => isHost && selectCategoryMut({ roomCode: roomCode!, category: key, cards: buildCards(key) as any })}
               className={`group relative overflow-hidden rounded-2xl p-6 border transition-all duration-300 text-right
                 ${selectedCategory === key
                   ? 'border-orange-400 shadow-[0_0_25px_rgba(251,146,60,0.4)] scale-[1.02]'
