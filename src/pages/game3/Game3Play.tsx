@@ -66,6 +66,7 @@ export function Game3Play() {
   /* ── Wikipedia images for all cards ── */
   const cardLabels = (cards as { label: string }[]).map(c => c.label);
   const cardImages = useCardImages(cardLabels);
+  const secretImgUrl = mySecretCard ? cardImages[mySecretCard.label] : undefined;
 
   /* ── Handlers ─────────────────────────────────────────────────────────── */
 
@@ -192,10 +193,10 @@ export function Game3Play() {
       </AnimatePresence>
 
       {/* ── Cards grid + Secret card sidebar ── */}
-      <div className="flex gap-3 flex-1 min-h-0">
+      <div className="flex flex-col md:flex-row gap-3 flex-1 min-h-0">
 
-        {/* Cards Grid 4×6 */}
-        <div className="grid grid-cols-6 gap-2 flex-1 content-start">
+        {/* Cards Grid — responsive columns */}
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-1.5 md:gap-2 flex-1 content-start">
           {cards.map((card: { id: string; label: string }, i: number) => {
             // @ts-ignore
             const isEliminated = eliminatedCards[myTeam].includes(card.id);
@@ -204,73 +205,71 @@ export function Game3Play() {
             const imgUrl       = cardImages[card.label];
 
             return (
-              <motion.div
-                key={card.id}
-                layout
-                onClick={() => handleCardClick(card.id)}
-                className={`
-                  aspect-[3/4] rounded-xl relative overflow-hidden transition-all duration-300
-                  ${isEliminated
-                    ? 'opacity-25 grayscale cursor-pointer'
-                    : isSelected
-                      ? 'ring-2 ring-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
-                      : isGuessMode && isMyTurn
-                        ? 'ring-1 ring-yellow-500/50 hover:ring-yellow-400 hover:scale-105 cursor-pointer'
-                        : turnMode === 'question' && isMyTurn
-                          ? 'ring-1 ring-white/10 hover:ring-white/30 hover:scale-105 cursor-pointer'
-                          : 'ring-1 ring-white/10'
-                  }
-                `}
-              >
-                {/* Photo or fallback bg */}
-                {imgUrl ? (
-                  <img
-                    src={imgUrl}
-                    alt={card.label}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a2235] to-[#0f1623] flex items-center justify-center text-3xl">
-                    {meta?.icon}
-                  </div>
-                )}
+              <div key={card.id} className="flex flex-col">
+                <motion.div
+                  layout
+                  onClick={() => handleCardClick(card.id)}
+                  className={`
+                    aspect-[3/4] rounded-xl relative overflow-hidden transition-all duration-300
+                    ${isEliminated
+                      ? 'opacity-25 grayscale cursor-pointer'
+                      : isSelected
+                        ? 'ring-2 ring-yellow-400 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
+                        : isGuessMode && isMyTurn
+                          ? 'ring-1 ring-yellow-500/50 hover:ring-yellow-400 hover:scale-105 cursor-pointer'
+                          : turnMode === 'question' && isMyTurn
+                            ? 'ring-1 ring-white/10 hover:ring-white/30 hover:scale-105 cursor-pointer'
+                            : 'ring-1 ring-white/10'
+                    }
+                  `}
+                >
+                  {/* Photo or fallback bg */}
+                  {imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={card.label}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a2235] to-[#0f1623] flex items-center justify-center text-2xl">
+                      {meta?.icon}
+                    </div>
+                  )}
 
-                {/* Gradient overlay for readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+                  {/* Number tag */}
+                  <div className="absolute top-1 left-1 text-[7px] text-white/40 font-mono">#{i + 1}</div>
 
-                {/* Number tag */}
-                <div className="absolute top-1 left-1 text-[8px] text-white/40 font-mono">{i + 1}</div>
+                  {/* Guess selection indicator */}
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-yellow-500/20 flex items-start justify-end p-1">
+                      <div className="text-yellow-400 text-sm animate-bounce">؟</div>
+                    </div>
+                  )}
 
-                {/* Label */}
-                <div className="absolute bottom-0 left-0 right-0 p-1.5 text-center">
-                  <span className="text-white font-bold text-[10px] leading-tight drop-shadow-lg">{card.label}</span>
-                </div>
+                  {/* Eliminated X */}
+                  {isEliminated && (
+                    <div className="absolute inset-0 flex items-center justify-center text-red-500/60 text-4xl font-black bg-black/40">
+                      ✕
+                    </div>
+                  )}
+                </motion.div>
 
-                {/* Guess selection indicator */}
-                {isSelected && (
-                  <div className="absolute inset-0 bg-yellow-500/20 flex items-start justify-end p-1">
-                    <div className="text-yellow-400 text-sm animate-bounce">؟</div>
-                  </div>
-                )}
-
-                {/* Eliminated X */}
-                {isEliminated && (
-                  <div className="absolute inset-0 flex items-center justify-center text-red-500/60 text-4xl font-black bg-black/40">
-                    X
-                  </div>
-                )}
-              </motion.div>
+                {/* Label BELOW the image */}
+                <span className="text-white/90 font-bold text-[9px] md:text-[10px] text-center mt-1 leading-tight block truncate px-0.5">
+                  {card.label}
+                </span>
+              </div>
             );
           })}
         </div>
 
-        {/* ── Secret card — large flippable, right side ── */}
-        <div className="w-48 shrink-0 flex flex-col items-center gap-3">
-          <h3 className="text-base font-black text-white">كارتك السري</h3>
+        {/* ── Secret card sidebar ── */}
+        <div className="md:w-44 shrink-0 flex flex-row md:flex-col items-center gap-3 justify-center md:justify-start">
+          <h3 className="hidden md:block text-base font-black text-white">كارتك السري</h3>
 
           {/* 3-D flip card */}
-          <div className="w-full" style={{ perspective: '1000px', aspectRatio: '3/4' }}>
+          <div className="w-28 md:w-full shrink-0" style={{ perspective: '1000px', aspectRatio: '3/4' }}>
             <motion.div
               style={{ transformStyle: 'preserve-3d', width: '100%', height: '100%', position: 'relative' }}
               animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -280,7 +279,7 @@ export function Game3Play() {
               <div
                 onClick={() => mySecretCard && setIsFlipped(true)}
                 style={{ backfaceVisibility: 'hidden' }}
-                className={`absolute inset-0 rounded-3xl border-2 flex flex-col items-center justify-center gap-4 p-4
+                className={`absolute inset-0 rounded-3xl border-2 flex flex-col items-center justify-center gap-3 p-3
                   bg-gradient-to-br from-[#111827] to-[#0c1220]
                   ${mySecretCard
                     ? 'border-orange-500/60 shadow-[0_0_35px_rgba(249,115,22,0.2)] cursor-pointer'
@@ -292,46 +291,65 @@ export function Game3Play() {
                     <div key={k} className="w-3 h-3 rounded-full bg-orange-400" />
                   ))}
                 </div>
-                <div className="text-4xl opacity-20">🎴</div>
+                <div className="text-3xl opacity-20">🎴</div>
                 <div className="text-xs text-white/20 font-semibold tracking-wide">مقلوب</div>
               </div>
 
-              {/* Front face */}
+              {/* Front face — shows Wikipedia image */}
               <div
                 onClick={() => setIsFlipped(false)}
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                className="absolute inset-0 rounded-3xl border-2 border-orange-500 flex flex-col items-center justify-center gap-3 p-4
-                  bg-gradient-to-br from-[#1a2235] to-[#0f1623]
+                className="absolute inset-0 rounded-3xl border-2 border-orange-500 overflow-hidden
                   shadow-[0_0_40px_rgba(249,115,22,0.35)] cursor-pointer"
               >
-                <div className="text-6xl">{meta?.icon}</div>
-                <div className="text-lg font-black text-white text-center leading-tight px-1">
-                  {mySecretCard?.label ?? '—'}
-                </div>
+                {secretImgUrl ? (
+                  <>
+                    <img
+                      src={secretImgUrl}
+                      alt={mySecretCard?.label}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
+                    <div className="absolute bottom-3 left-0 right-0 text-center px-2">
+                      <span className="text-white font-black text-sm leading-tight drop-shadow-lg">
+                        {mySecretCard?.label}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1a2235] to-[#0f1623] flex flex-col items-center justify-center gap-3 p-4">
+                    <div className="text-5xl">{meta?.icon}</div>
+                    <div className="text-base font-black text-white text-center leading-tight px-1">
+                      {mySecretCard?.label ?? '—'}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
 
-          {/* Lock button */}
-          <motion.button
-            onClick={() => mySecretCard && setIsFlipped(f => !f)}
-            whileHover={mySecretCard ? { scale: 1.12 } : {}}
-            whileTap={mySecretCard ? { scale: 0.93 } : {}}
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300
-              ${isFlipped
-                ? 'bg-green-500/20 border-2 border-green-400/70 shadow-[0_0_18px_rgba(34,197,94,0.35)]'
-                : 'bg-orange-500/15 border-2 border-orange-500/50 shadow-[0_0_18px_rgba(249,115,22,0.2)]'
-              }
-              ${!mySecretCard ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'}`}
-          >
-            {isFlipped ? '🔓' : '🔒'}
-          </motion.button>
-          <p className="text-[11px] text-slate-500 text-center">
-            {isFlipped ? 'اضغط للإخفاء' : 'اضغط للكشف'}
-          </p>
+          {/* Lock button + legend */}
+          <div className="flex md:flex-col items-center gap-2">
+            <motion.button
+              onClick={() => mySecretCard && setIsFlipped(f => !f)}
+              whileHover={mySecretCard ? { scale: 1.12 } : {}}
+              whileTap={mySecretCard ? { scale: 0.93 } : {}}
+              className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-xl md:text-2xl transition-all duration-300
+                ${isFlipped
+                  ? 'bg-green-500/20 border-2 border-green-400/70 shadow-[0_0_18px_rgba(34,197,94,0.35)]'
+                  : 'bg-orange-500/15 border-2 border-orange-500/50 shadow-[0_0_18px_rgba(249,115,22,0.2)]'
+                }
+                ${!mySecretCard ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              {isFlipped ? '🔓' : '🔒'}
+            </motion.button>
+            <p className="text-[10px] text-slate-500 text-center">
+              {isFlipped ? 'إخفاء' : 'كشف'}
+            </p>
+          </div>
 
-          {/* Mini legend */}
-          <div className="mt-auto flex flex-col gap-1 text-[10px] text-slate-500 w-full">
+          {/* Mini legend — desktop only */}
+          <div className="hidden md:flex mt-auto flex-col gap-1 text-[10px] text-slate-500 w-full">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-white/30 inline-block shrink-0" /> متاح</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-black/50 border border-white/10 inline-block shrink-0" /> مستبعد</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-yellow-400 inline-block shrink-0" /> توقع</span>
