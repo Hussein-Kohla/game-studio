@@ -4,7 +4,7 @@ export type CardCategory = 'animals' | 'people' | 'egyptian_celebs' | 'football_
 
 export interface CardItem {
   id: string;
-  category: CardCategory;
+  categoryId: CardCategory;
   label: string;
   isFlipped: boolean;
   isMatched: boolean;
@@ -152,7 +152,7 @@ export function buildCards(cat: CardCategory): CardItem[] {
   const labels = shuffle(CARD_DATA[cat]).slice(0, 24);
   return labels.map((label, i) => ({
     id: `card-${i}`,
-    category: cat,
+    categoryId: cat,
     label,
     isFlipped: false,
     isMatched: false,
