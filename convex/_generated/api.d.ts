@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as game3 from "../game3.js";
 import type * as http from "../http.js";
 import type * as images from "../images.js";
 import type * as prompts from "../prompts.js";
@@ -23,6 +24,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  game3: typeof game3;
   http: typeof http;
   images: typeof images;
   prompts: typeof prompts;
