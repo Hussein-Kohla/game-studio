@@ -5,29 +5,29 @@
 export const CARD_WIKI_TITLES: Record<string, string> = {
   // ── Animals — solo, clear-face article picks ──────────────────────────────
   'أسد':      'Lion',
-  'نمر':      'Tiger',
+  'نمر':      'Bengal_tiger',             // face-forward portrait
   'فيل':      'African_bush_elephant',
   'زرافة':    'Giraffe',
-  'حصان':     'Arabian_horse',          // solo portrait
-  'ديك':      'Rooster',
-  'قط':       'Tabby_cat',              // clear face
-  'كلب':      'Golden_Retriever',       // clean solo photo
+  'حصان':     'Thoroughbred',             // classic horse portrait, face visible
+  'ديك':      'Red_junglefowl',           // vibrant solo male, no hens
+  'قط':       'Tabby_cat',
+  'كلب':      'Labrador_Retriever',       // iconic clean dog face
   'أرنب':     'Rabbit',
-  'ضفدع':     'Red-eyed_tree_frog',     // vibrant & clear
+  'ضفدع':     'Frog',                     // reverted — was working fine
   'بومة':     'Great_horned_owl',
-  'دلفين':    'Common_bottlenose_dolphin',
-  'تمساح':    'Nile_crocodile',
+  'دلفين':    'Dolphin',                  // reverted — was working fine
+  'تمساح':    'American_alligator',       // clear frontal head shot
   'ثعبان':    'Ball_python',
   'طاووس':    'Indian_peafowl',
   'فراشة':    'Monarch_butterfly',
   'دب':       'Brown_bear',
   'ذئب':      'Gray_wolf',
   'قرد':      'Chimpanzee',
-  'حمار':     'Donkey',
+  'حمار':     'Domestic_donkey',          // clearer solo face
   'جمل':      'Dromedary',
   'بقرة':     'Cattle',
-  'خروف':     'Sheep',
-  'دجاجة':    'Leghorn_chicken',        // distinct from rooster
+  'خروف':     'Merino_sheep',             // single sheep clear portrait
+  'دجاجة':    'Plymouth_Rock_chicken',    // clear solo hen, no rooster
 
   // ── Football Stars ────────────────────────────────────────────────────────
   'رونالدو':   'Cristiano_Ronaldo',
