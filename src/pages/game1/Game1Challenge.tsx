@@ -14,7 +14,7 @@ export function Game1Challenge() {
   const boxId = Number(searchParams.get('box'));
   const navigate = useNavigate();
 
-  const { teams, currentTeamIndex, selectedGroupId, openBox, addScore, nextTurn } = useGame1Store();
+  const { teams, currentTeamIndex, openBox, addScore, nextTurn } = useGame1Store();
   const currentTeam = teams[currentTeamIndex];
 
   const popPrompt = useMutation(api.prompts.popRandomPrompt);

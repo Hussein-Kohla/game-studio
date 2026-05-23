@@ -79,7 +79,7 @@ export function Game4Setup() {
           </div>
 
           <div className="space-y-3 mb-4 max-h-[36vh] overflow-y-auto">
-            {players.map((player, i) => (
+            {players.map((player) => (
               <div key={player.id} className="flex gap-2 items-center">
                 <button
                   type="button"
