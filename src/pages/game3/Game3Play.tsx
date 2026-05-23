@@ -1,38 +1,44 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useGame3Store, CATEGORY_META } from '../../store/game3Store';
+
+type TurnMode = null | 'question' | 'guess';
+
 export function Game3Play() {
-  const {
-    roomCode, myPlayerId,
-    isGuessingMode, toggleGuessMode,
-    guessCardId: guessConfirm,
-    setGuessCardId: setGuessConfirm
-  } = useGame3Store();
-  
-  const room = useQuery(api.game3.getRoom, roomCode ? { roomCode } : "skip");
-  
+  const { roomCode, myPlayerId } = useGame3Store();
+
+  const room = useQuery(api.game3.getRoom, roomCode ? { roomCode } : 'skip');
+
   // @ts-ignore
-  const flipCardMut = useMutation(api.game3.flipCard);
+  const flipCardMut  = useMutation(api.game3.flipCard);
   const guessCardMut = useMutation(api.game3.guessCard);
-  const endTurnMut = useMutation(api.game3.endTurn);
+  const endTurnMut   = useMutation(api.game3.endTurn);
   const resetGameMut = useMutation(api.game3.resetGame);
 
   const navigate = useNavigate();
+
+  const [turnMode, setTurnMode]       = useState<TurnMode>(null);
+  const [guessConfirm, setGuessConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     if (!roomCode) navigate('/game3/setup');
   }, [roomCode, navigate]);
 
-  // Navigate to appropriate phase if room phase changed
   useEffect(() => {
     if (room?.phase === 'reveal') navigate('/game3/reveal');
     if (room?.phase === 'category' || room?.phase === 'lobby') navigate('/game3/room');
   }, [room?.phase, navigate]);
+
+  // Reset local turn state whenever the active turn changes
+  useEffect(() => {
+    setTurnMode(null);
+    setGuessConfirm(null);
+  }, [room?.currentTurn]);
 
   if (!room) return <div className="p-10 text-white text-center">جاري التحميل...</div>;
 
@@ -40,27 +46,28 @@ export function Game3Play() {
 
   // @ts-ignore
   const me = players.find(p => p.id === myPlayerId);
-  const myTeam = me?.team ?? 'red';
+  const myTeam   = me?.team ?? 'red';
   const isMyTurn = myTeam === currentTurn;
 
   const meta = selectedCategory ? CATEGORY_META[selectedCategory as keyof typeof CATEGORY_META] : null;
 
   // @ts-ignore
-  const redTeam = players.find(p => p.team === 'red');
+  const redTeam   = players.find(p => p.team === 'red');
   // @ts-ignore
   const greenTeam = players.find(p => p.team === 'green');
 
   // @ts-ignore
   const mySecretCardId = secretCards[myTeam];
   // @ts-ignore
-  const mySecretCard = cards.find(c => c.id === mySecretCardId);
+  const mySecretCard   = cards.find(c => c.id === mySecretCardId);
+
+  /* ── Handlers ─────────────────────────────────────────────────────────── */
 
   const handleCardClick = (cardId: string) => {
-    if (isGuessingMode) {
-      if (!isMyTurn) return;
-      setGuessConfirm(cardId);
-    } else {
-      // Toggle eliminated state (local to team)
+    if (!isMyTurn) return;
+    if (turnMode === 'guess') {
+      setGuessConfirm(prev => (prev === cardId ? null : cardId));
+    } else if (turnMode === 'question') {
       flipCardMut({ roomCode: roomCode!, team: myTeam, cardId });
     }
   };
@@ -69,7 +76,16 @@ export function Game3Play() {
     if (!guessConfirm) return;
     guessCardMut({ roomCode: roomCode!, guessingTeam: myTeam, cardId: guessConfirm });
     setGuessConfirm(null);
+    setTurnMode(null);
   };
+
+  const handleEndTurn = () => {
+    endTurnMut({ roomCode: roomCode! });
+    setTurnMode(null);
+    setGuessConfirm(null);
+  };
+
+  /* ── Game-over screen ─────────────────────────────────────────────────── */
 
   if (phase === 'gameover') {
     const winnerName = winner === 'red' ? redTeam?.name : winner === 'green' ? greenTeam?.name : null;
@@ -104,11 +120,23 @@ export function Game3Play() {
     );
   }
 
+  /* ── Turn indicator text ─────────────────────────────────────────────── */
+
+  const turnIndicatorText = () => {
+    if (!isMyTurn) return `⏳ دور فريق ${currentTurn === 'red' ? redTeam?.name : greenTeam?.name}`;
+    if (turnMode === null)       return '🎮 اختار نوع دورك';
+    if (turnMode === 'question') return '❓ اقلب الكروت اللي تعرفها — ثم إنهي دورك';
+    if (turnMode === 'guess')    return '🎯 اختار الكارت اللي هتتوقعه';
+    return '';
+  };
+
+  /* ── Main render ──────────────────────────────────────────────────────── */
+
   return (
     <div className="flex-1 flex flex-col p-4 max-w-6xl mx-auto w-full">
 
-      {/* Scoreboard */}
-      <div className="flex gap-3 mb-4">
+      {/* ── Scoreboard ── */}
+      <div className="flex gap-3 mb-3">
         {/* Red team */}
         <div className={`flex-1 flex items-center justify-between px-5 py-3 rounded-2xl border transition-all duration-500 ${
           currentTurn === 'red'
@@ -123,15 +151,6 @@ export function Game3Play() {
             </div>
           </div>
           <div className="text-4xl font-black text-white">{scores.red}</div>
-        </div>
-
-        {/* center info */}
-        <div className="flex flex-col items-center justify-center px-4">
-          <div className="text-xs text-slate-400 mb-1">كارتك السري</div>
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1a2235] to-[#0f1623] border border-orange-500/50 flex flex-col items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-            <div className="text-lg leading-none">{meta?.icon}</div>
-            <div className="text-[9px] font-bold text-white mt-1">{mySecretCard?.label}</div>
-          </div>
         </div>
 
         {/* Green team */}
@@ -151,109 +170,169 @@ export function Game3Play() {
         </div>
       </div>
 
-      {/* Turn indicator */}
+      {/* ── Turn indicator ── */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentTurn}
-          initial={{ opacity: 0, y: -10 }}
+          key={`${currentTurn}-${turnMode}`}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          className={`text-center py-2 mb-3 rounded-xl font-bold text-lg ${
+          exit={{ opacity: 0, y: 8 }}
+          className={`text-center py-2 mb-3 rounded-xl font-bold text-base ${
             currentTurn === 'red' ? 'text-red-300' : 'text-green-300'
           }`}
         >
-          {isMyTurn ? (
-            isGuessingMode
-              ? '🎯 اختار الكارت اللي هتخمنه'
-              : '👆 اقلب الكروت اللي تعرفها — أو اضغط توقع'
-          ) : (
-            `⏳ دور فريق ${currentTurn === 'red' ? redTeam?.name : greenTeam?.name}`
-          )}
+          {turnIndicatorText()}
         </motion.div>
       </AnimatePresence>
 
-      {/* Cards Grid 4×6 */}
-      <div className="grid grid-cols-6 gap-2 flex-1">
-        {cards.map((card, i: number) => {
-          const isEliminated = eliminatedCards[myTeam].includes(card.id);
-          const isSelected = guessConfirm === card.id;
+      {/* ── Cards grid + Secret card sidebar ── */}
+      <div className="flex gap-3 flex-1 min-h-0">
 
-          return (
-            <motion.div
-              key={card.id}
-              layout
-              onClick={() => handleCardClick(card.id)}
-              className={`
-                aspect-[3/4] rounded-xl flex flex-col items-center justify-center p-1.5 relative overflow-hidden transition-all duration-300
-                ${isEliminated
-                  ? 'bg-black/50 border border-white/5 opacity-30 grayscale cursor-pointer'
-                  : isSelected
-                    ? 'border-2 border-yellow-400 bg-yellow-500/15 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
-                    : isGuessingMode && isMyTurn
-                      ? 'border border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-400/70 hover:scale-105 cursor-pointer'
-                      : 'border border-white/10 bg-gradient-to-br from-[#1a2235] to-[#0f1623] hover:border-white/30 hover:bg-[#1e2a40] cursor-pointer hover:scale-105'
-                }
-              `}
-            >
-              {/* number tag */}
-              <div className="absolute top-1 left-1 text-[9px] text-slate-600 font-mono">
-                {i + 1}
-              </div>
+        {/* Cards Grid 4×6 */}
+        <div className="grid grid-cols-6 gap-2 flex-1 content-start">
+          {cards.map((card: { id: string; label: string }, i: number) => {
+            // @ts-ignore
+            const isEliminated = eliminatedCards[myTeam].includes(card.id);
+            const isSelected   = guessConfirm === card.id;
+            const isGuessMode  = turnMode === 'guess';
 
-              <div className="text-xl mb-1">{meta?.icon}</div>
-              <span className="text-white font-bold text-[11px] text-center leading-tight">{card.label}</span>
-              {isSelected && <div className="text-yellow-400 text-xs mt-1 animate-bounce">؟</div>}
-              {isEliminated && <div className="absolute inset-0 flex items-center justify-center text-red-500/50 text-4xl font-black">X</div>}
-            </motion.div>
-          );
-        })}
+            return (
+              <motion.div
+                key={card.id}
+                layout
+                onClick={() => handleCardClick(card.id)}
+                className={`
+                  aspect-[3/4] rounded-xl flex flex-col items-center justify-center p-1.5 relative overflow-hidden transition-all duration-300
+                  ${isEliminated
+                    ? 'bg-black/50 border border-white/5 opacity-30 grayscale cursor-pointer'
+                    : isSelected
+                      ? 'border-2 border-yellow-400 bg-yellow-500/15 shadow-[0_0_20px_rgba(234,179,8,0.5)] scale-105 cursor-pointer'
+                      : isGuessMode && isMyTurn
+                        ? 'border border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-400/70 hover:scale-105 cursor-pointer'
+                        : turnMode === 'question' && isMyTurn
+                          ? 'border border-white/10 bg-gradient-to-br from-[#1a2235] to-[#0f1623] hover:border-white/30 hover:bg-[#1e2a40] cursor-pointer hover:scale-105'
+                          : 'border border-white/10 bg-gradient-to-br from-[#1a2235] to-[#0f1623]'
+                  }
+                `}
+              >
+                <div className="absolute top-1 left-1 text-[9px] text-slate-600 font-mono">{i + 1}</div>
+                <div className="text-xl mb-1">{meta?.icon}</div>
+                <span className="text-white font-bold text-[11px] text-center leading-tight">{card.label}</span>
+                {isSelected   && <div className="text-yellow-400 text-xs mt-1 animate-bounce">؟</div>}
+                {isEliminated && <div className="absolute inset-0 flex items-center justify-center text-red-500/50 text-4xl font-black">X</div>}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* ── Secret card — large, right side ── */}
+        <div className="w-32 shrink-0 flex flex-col items-center gap-2">
+          <div className="text-xs text-slate-400 font-semibold tracking-wide text-center">كارتك السري</div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full rounded-2xl bg-gradient-to-br from-[#1a2235] to-[#0f1623] border-2 border-orange-500/60
+                       flex flex-col items-center justify-center gap-3 p-4
+                       shadow-[0_0_30px_rgba(249,115,22,0.25)]"
+            style={{ aspectRatio: '3/4' }}
+          >
+            <div className="text-5xl">{meta?.icon}</div>
+            <div className="text-sm font-black text-white text-center leading-tight px-1">
+              {mySecretCard?.label ?? '—'}
+            </div>
+            <div className="text-[10px] text-orange-400/70 font-semibold">سري 🔒</div>
+          </motion.div>
+
+          {/* Mini legend below secret card */}
+          <div className="mt-auto flex flex-col gap-1 text-[10px] text-slate-500 w-full">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-white/30 inline-block shrink-0" /> متاح</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-black/50 border border-white/10 inline-block shrink-0" /> مستبعد</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-yellow-400 inline-block shrink-0" /> توقع</span>
+          </div>
+        </div>
       </div>
 
-      {/* Action buttons */}
+      {/* ── Action zone ── */}
       {isMyTurn && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 flex gap-3 justify-center flex-wrap"
         >
-          {!isGuessingMode ? (
+          {/* Step 1 — pick a mode */}
+          {turnMode === null && (
             <>
               <button
-                onClick={toggleGuessMode}
-                className="px-6 py-3 rounded-xl font-bold text-white bg-yellow-500/20 border border-yellow-500/40 hover:bg-yellow-500/30 hover:border-yellow-400/70 transition-all text-lg"
+                id="btn-mode-question"
+                onClick={() => setTurnMode('question')}
+                className="px-7 py-3 rounded-xl font-bold text-white bg-blue-500/20 border border-blue-500/40
+                           hover:bg-blue-500/30 hover:border-blue-400/70 transition-all text-lg"
+              >
+                ❓ اسأل وإقصي
+              </button>
+              <button
+                id="btn-mode-guess"
+                onClick={() => setTurnMode('guess')}
+                className="px-7 py-3 rounded-xl font-bold text-white bg-yellow-500/20 border border-yellow-500/40
+                           hover:bg-yellow-500/30 hover:border-yellow-400/70 transition-all text-lg"
               >
                 🎯 توقع
               </button>
+            </>
+          )}
+
+          {/* Step 2a — question mode: flip cards → end turn */}
+          {turnMode === 'question' && (
+            <>
               <button
-                onClick={() => endTurnMut({ roomCode: roomCode! })}
-                className="px-6 py-3 rounded-xl font-bold text-white bg-red-500/20 border border-red-500/40 hover:bg-red-500/30 hover:border-red-400/70 transition-all text-lg"
+                id="btn-end-turn"
+                onClick={handleEndTurn}
+                className="px-7 py-3 rounded-xl font-bold text-white bg-green-500/20 border border-green-500/40
+                           hover:bg-green-500/30 hover:border-green-400/70 transition-all text-lg"
               >
                 ✅ إنهاء الدور
               </button>
+              <button
+                id="btn-back-question"
+                onClick={() => setTurnMode(null)}
+                className="px-5 py-3 rounded-xl font-bold text-white bg-white/5 border border-white/15
+                           hover:bg-white/10 transition-all text-sm"
+              >
+                ↩ رجوع
+              </button>
             </>
-          ) : (
+          )}
+
+          {/* Step 2b — guess mode: pick a card → confirm */}
+          {turnMode === 'guess' && (
             <>
               {guessConfirm ? (
                 <>
                   <button
+                    id="btn-confirm-guess"
                     onClick={confirmGuess}
-                    className="px-6 py-3 rounded-xl font-bold text-white bg-green-500/20 border border-green-500/50 hover:bg-green-500/30 transition-all text-lg"
+                    className="px-7 py-3 rounded-xl font-bold text-white bg-yellow-500 hover:bg-yellow-400
+                               transition-all text-lg shadow-[0_0_20px_rgba(234,179,8,0.4)]"
                   >
                     ✅ تأكيد التوقع
                   </button>
                   <button
+                    id="btn-cancel-guess"
                     onClick={() => setGuessConfirm(null)}
-                    className="px-6 py-3 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 transition-all text-lg"
+                    className="px-5 py-3 rounded-xl font-bold text-white bg-white/5 border border-white/15
+                               hover:bg-white/10 transition-all text-sm"
                   >
                     إلغاء
                   </button>
                 </>
               ) : (
                 <button
-                  onClick={toggleGuessMode}
-                  className="px-6 py-3 rounded-xl font-bold text-white bg-white/5 border border-white/15 hover:bg-white/10 transition-all text-lg"
+                  id="btn-back-guess"
+                  onClick={() => setTurnMode(null)}
+                  className="px-5 py-3 rounded-xl font-bold text-white bg-white/5 border border-white/15
+                             hover:bg-white/10 transition-all text-sm"
                 >
-                  ✕ إلغاء التوقع
+                  ↩ رجوع
                 </button>
               )}
             </>
@@ -261,16 +340,9 @@ export function Game3Play() {
         </motion.div>
       )}
 
-      {/* Legend */}
-      <div className="mt-3 flex gap-4 justify-center text-xs text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-white/30 inline-block" /> متاح</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-black/50 border border-white/10 inline-block" /> مستبعد</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-yellow-400 inline-block" /> وضع التوقع</span>
-      </div>
-
-      {/* Confirm guess modal overlay */}
+      {/* ── Confirm guess modal ── */}
       <AnimatePresence>
-        {guessConfirm && (
+        {guessConfirm && turnMode === 'guess' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
