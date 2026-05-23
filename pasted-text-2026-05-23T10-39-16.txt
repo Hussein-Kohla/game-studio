@@ -1,0 +1,59 @@
+13:36:56.209 Running build in Washington, D.C., USA (East) – iad1
+13:36:56.210 Build machine configuration: 2 cores, 8 GB
+13:36:56.222 Cloning github.com/Hussein-Kohla/game-studio (Branch: main, Commit: acacf25)
+13:36:56.223 Skipping build cache, deployment was triggered without cache.
+13:36:56.662 Cloning completed: 440.000ms
+13:36:57.191 Running "vercel build"
+13:36:57.211 Vercel CLI 54.4.1
+13:36:57.740 Installing dependencies...
+13:37:00.193 npm warn deprecated tsparticles-plugin-easing-quad@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.254 npm warn deprecated tsparticles-shape-square@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.286 npm warn deprecated tsparticles-move-parallax@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.287 npm warn deprecated tsparticles-interaction-external-pause@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.312 npm warn deprecated tsparticles-interaction-particles-attract@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.330 npm warn deprecated tsparticles-shape-line@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.468 npm warn deprecated tsparticles-shape-star@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.482 npm warn deprecated tsparticles-updater-size@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.483 npm warn deprecated tsparticles-basic@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.501 npm warn deprecated tsparticles-shape-circle@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.529 npm warn deprecated tsparticles-updater-color@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.535 npm warn deprecated tsparticles-updater-opacity@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.575 npm warn deprecated tsparticles-updater-stroke-color@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.594 npm warn deprecated react-tsparticles@2.12.2: @tsparticles/react is the new version, please use that
+13:37:00.598 npm warn deprecated tsparticles-shape-text@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.659 npm warn deprecated tsparticles-interaction-particles-collisions@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.667 npm warn deprecated tsparticles-move-base@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.676 npm warn deprecated tsparticles-interaction-external-remove@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.683 npm warn deprecated tsparticles-interaction-external-push@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.697 npm warn deprecated tsparticles-slim@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.702 npm warn deprecated tsparticles-shape-polygon@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.755 npm warn deprecated tsparticles-particles.js@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.792 npm warn deprecated tsparticles-interaction-external-slow@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.805 npm warn deprecated tsparticles-interaction-external-bounce@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.828 npm warn deprecated tsparticles-interaction-external-attract@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.895 npm warn deprecated tsparticles-updater-rotate@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:00.896 npm warn deprecated tsparticles-updater-out-modes@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.069 npm warn deprecated tsparticles-interaction-external-connect@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.070 npm warn deprecated tsparticles-interaction-external-grab@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.150 npm warn deprecated tsparticles-updater-life@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.231 npm warn deprecated tsparticles-interaction-external-repulse@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.315 npm warn deprecated tsparticles-interaction-external-bubble@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.339 npm warn deprecated tsparticles-interaction-particles-links@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:01.523 npm warn deprecated tsparticles-shape-image@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:03.675 npm warn deprecated tsparticles-engine@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+13:37:04.930 
+13:37:04.931 added 227 packages in 7s
+13:37:04.931 
+13:37:04.931 52 packages are looking for funding
+13:37:04.931   run `npm fund` for details
+13:37:04.988 Running "npm run build"
+13:37:05.109 
+13:37:05.109 > game-studio@0.0.0 build
+13:37:05.110 > tsc -b && vite build
+13:37:05.110 
+13:37:09.264 src/pages/game3/Game3Play.tsx(178,20): error TS2345: Argument of type '(card: CardItem, i: number) => JSX.Element' is not assignable to parameter of type '(value: { isMatched?: boolean | undefined; isFlipped?: boolean | undefined; flippedBy?: "green" | "red" | undefined; id: string; label: string; categoryId: string; }, index: number, array: { ...; }[]) => Element'.
+13:37:09.265   Types of parameters 'card' and 'value' are incompatible.
+13:37:09.265     Property 'category' is missing in type '{ isMatched?: boolean | undefined; isFlipped?: boolean | undefined; flippedBy?: "green" | "red" | undefined; id: string; label: string; categoryId: string; }' but required in type 'CardItem'.
+13:37:09.265 src/pages/game3/Game3Room.tsx(107,96): error TS2322: Type 'CardItem[]' is not assignable to type '{ isMatched?: boolean | undefined; isFlipped?: boolean | undefined; flippedBy?: "green" | "red" | undefined; id: string; label: string; categoryId: string; }[]'.
+13:37:09.269   Property 'categoryId' is missing in type 'CardItem' but required in type '{ isMatched?: boolean | undefined; isFlipped?: boolean | undefined; flippedBy?: "green" | "red" | undefined; id: string; label: string; categoryId: string; }'.
+13:37:09.930 Error: Command "npm run build" exited with 2
