@@ -148,7 +148,7 @@ export const useGame3Store = create<{
 }));
 
 export function generateRoomCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 export function buildCards(cat: CardCategory): CardItem[] {
