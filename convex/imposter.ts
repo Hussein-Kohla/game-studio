@@ -40,7 +40,8 @@ export const pickRandomPair = mutation({
     const selectedGroup = available[Math.floor(Math.random() * available.length)];
     
     // Pick two different words randomly
-    const shuffledWords = [...selectedGroup.words].sort(() => Math.random() - 0.5);
+    const wordsArray = selectedGroup.words ?? [];
+    const shuffledWords = [...wordsArray].sort(() => Math.random() - 0.5);
     const word1 = shuffledWords[0];
     const word2 = shuffledWords.length > 1 ? shuffledWords[1] : word1;
 
@@ -70,7 +71,7 @@ export const syncPairsFromCatalog = mutation({
 
       for (const group of groups) {
         // Find existing group by checking if it contains the first word
-        const row = existingInCat.find((r) => r.words.includes(group.words[0]));
+        const row = existingInCat.find((r) => (r.words ?? []).includes(group.words[0]));
 
         if (row) {
           await ctx.db.patch(row._id, { words: group.words });
@@ -109,7 +110,7 @@ export const seedImposterWords = mutation({
         .collect();
 
       for (const group of groups) {
-        const dup = existingInCat.find((r) => r.words.includes(group.words[0]));
+        const dup = existingInCat.find((r) => (r.words ?? []).includes(group.words[0]));
 
         if (!dup) {
           await ctx.db.insert("imposterWords", {
