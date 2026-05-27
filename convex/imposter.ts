@@ -29,48 +29,56 @@ export const pickRandomPair = mutation({
   },
   handler: async (ctx, args) => {
     const excludeSet = new Set(args.exclude ?? []);
-    const pairs = await ctx.db
+    const groups = await ctx.db
       .query("imposterWords")
       .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
       .collect();
 
-    const available = pairs.filter((p) => !excludeSet.has(p._id));
+    const available = groups.filter((g) => !excludeSet.has(g._id));
     if (available.length === 0) return null;
 
-    const selected = available[Math.floor(Math.random() * available.length)];
+    const selectedGroup = available[Math.floor(Math.random() * available.length)];
+    
+    // Pick two different words randomly
+    const shuffledWords = [...selectedGroup.words].sort(() => Math.random() - 0.5);
+    const word1 = shuffledWords[0];
+    const word2 = shuffledWords.length > 1 ? shuffledWords[1] : word1;
+
+    // Swap randomly (50% chance)
+    const swap = Math.random() > 0.5;
+
     return {
-      pairId: selected._id,
-      word: selected.word,
-      impostorWord: selected.impostorWord,
+      pairId: selectedGroup._id,
+      word: swap ? word2 : word1,
+      impostorWord: swap ? word1 : word2,
     };
   },
 });
 
-/** يحدّث كلمات الامبوستر من الملف بعد تعديل الأزواج (بدون حذف الكل) */
+/** يحدّث كلمات الامبوستر من الملف بعد تعديل المجموعات */
 export const syncPairsFromCatalog = mutation({
   args: {},
   handler: async (ctx) => {
     let updated = 0;
     let notFound = 0;
 
-    for (const [categoryId, pairs] of Object.entries(IMPOSTER_PAIRS)) {
-      for (const pair of pairs) {
-        const row = await ctx.db
-          .query("imposterWords")
-          .withIndex("by_category", (q) => q.eq("categoryId", categoryId))
-          .filter((q) => q.eq(q.field("word"), pair.word))
-          .first();
+    for (const [categoryId, groups] of Object.entries(IMPOSTER_PAIRS)) {
+      const existingInCat = await ctx.db
+        .query("imposterWords")
+        .withIndex("by_category", (q) => q.eq("categoryId", categoryId))
+        .collect();
+
+      for (const group of groups) {
+        // Find existing group by checking if it contains the first word
+        const row = existingInCat.find((r) => r.words.includes(group.words[0]));
 
         if (row) {
-          if (row.impostorWord !== pair.impostorWord) {
-            await ctx.db.patch(row._id, { impostorWord: pair.impostorWord });
-            updated++;
-          }
+          await ctx.db.patch(row._id, { words: group.words });
+          updated++;
         } else {
           await ctx.db.insert("imposterWords", {
             categoryId,
-            word: pair.word,
-            impostorWord: pair.impostorWord,
+            words: group.words,
           });
           notFound++;
         }
@@ -94,19 +102,19 @@ export const seedImposterWords = mutation({
     let inserted = 0;
     let skipped = 0;
 
-    for (const [categoryId, pairs] of Object.entries(IMPOSTER_PAIRS)) {
-      for (const pair of pairs) {
-        const dup = await ctx.db
-          .query("imposterWords")
-          .withIndex("by_category", (q) => q.eq("categoryId", categoryId))
-          .filter((q) => q.eq(q.field("word"), pair.word))
-          .first();
+    for (const [categoryId, groups] of Object.entries(IMPOSTER_PAIRS)) {
+      const existingInCat = await ctx.db
+        .query("imposterWords")
+        .withIndex("by_category", (q) => q.eq("categoryId", categoryId))
+        .collect();
+
+      for (const group of groups) {
+        const dup = existingInCat.find((r) => r.words.includes(group.words[0]));
 
         if (!dup) {
           await ctx.db.insert("imposterWords", {
             categoryId,
-            word: pair.word,
-            impostorWord: pair.impostorWord,
+            words: group.words,
           });
           inserted++;
         } else {

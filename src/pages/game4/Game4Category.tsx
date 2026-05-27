@@ -100,11 +100,11 @@ export function Game4Category() {
                       <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         {assets?.emoji} {cat.label}
                       </h3>
-                      <p className="text-slate-500 text-sm mt-1">
-                        {exhausted
-                          ? 'نُفدت في هذه الجلسة — غيّر التصنيف'
-                          : `${remaining} متبقي · ${usedInSession} مُستخدم`}
-                      </p>
+                      {exhausted && (
+                        <p className="text-slate-500 text-sm mt-1">
+                          نُفدت في هذه الجلسة — غيّر التصنيف
+                        </p>
+                      )}
                     </div>
                   </Card>
                 </button>

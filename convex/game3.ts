@@ -170,8 +170,12 @@ export const guessCard = mutation({
           scores: { ...room.scores, [args.guessingTeam]: room.scores[args.guessingTeam] + 1 }
         });
       } else {
+        const eliminated = room.eliminatedCards[args.guessingTeam] || [];
+        const newEliminated = eliminated.includes(args.cardId) ? eliminated : [...eliminated, args.cardId];
+
         await ctx.db.patch(room._id, {
           currentTurn: opponentTeam,
+          eliminatedCards: { ...room.eliminatedCards, [args.guessingTeam]: newEliminated }
         });
       }
     }

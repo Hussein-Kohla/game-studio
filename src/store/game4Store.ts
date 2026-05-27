@@ -76,12 +76,12 @@ export const useGame4Store = create<Game4State>()(
       ...initialState,
 
       setConfig: (players, winScore) =>
-        set({
+        set((state) => ({
           ...initialState,
           players,
           winScore,
-          usedPairsByCategory: {},
-        }),
+          usedPairsByCategory: state.usedPairsByCategory,
+        })),
 
       setCategory: (categoryId, categoryLabel) =>
         set({ categoryId, categoryLabel }),

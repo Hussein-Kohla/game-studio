@@ -32,11 +32,11 @@ export function Game1Challenge() {
   const loadImage = (promptEn: string) => {
     setImgLoading(true);
     setImgUrl('');
-    
+
     const seed = Math.floor(Math.random() * 9999999);
     const cleanPrompt = promptEn.replace(/[^a-zA-Z0-9\s,]/g, '');
     const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanPrompt)}?seed=${seed}&nologo=true&width=512&height=512&model=turbo`;
-    
+
     // Tier 1: allorigins proxy
     const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(pollinationsUrl)}`;
     console.log("Loading AI image (Tier 1: AllOrigins)...");
@@ -53,7 +53,7 @@ export function Game1Challenge() {
       console.warn("Tier 1 failed. Trying Tier 2 (WSRV)...");
       setImgLoading(true);
       setImgUrl(`https://wsrv.nl/?url=${encodeURIComponent(pollinationsUrl)}&we=1&il=1&t=${seed}`);
-    } 
+    }
     // Tier 3 Fallback: codetabs
     else if (imgUrl && imgUrl.includes('wsrv.nl')) {
       console.warn("Tier 2 failed. Trying Tier 3 (CodeTabs)...");
@@ -64,8 +64,8 @@ export function Game1Challenge() {
     else if (imgUrl && imgUrl.includes('codetabs.com')) {
       console.warn("Tier 3 failed. Trying Tier 4 (Convex Backend Proxy)...");
       setImgLoading(true);
-      const httpBaseUrl = (import.meta.env.VITE_CONVEX_SITE_URL as string) || 
-                         ((import.meta.env.VITE_CONVEX_URL as string) || '').replace('.cloud', '.site');
+      const httpBaseUrl = (import.meta.env.VITE_CONVEX_SITE_URL as string) ||
+        ((import.meta.env.VITE_CONVEX_URL as string) || '').replace('.cloud', '.site');
       setImgUrl(`${httpBaseUrl}/api/image?prompt=${encodeURIComponent(cleanPrompt)}&seed=${seed}`);
     }
     // No more fallbacks! Only AI.
@@ -123,9 +123,9 @@ export function Game1Challenge() {
     setWheelResult(result);
     if (result === 'lie') {
       const lieWords = [
-        "قطة", "بطيخ", "قمر", "شمس", "عنكبوت", "طائرة", "دراجة", "نار", 
-        "ثلج", "جبل", "بحر", "مفتاح", "ساعة", "كتاب", "فيل", "أسد", "قهوة", 
-        "مستشفى", "ذهب", "طبيب", "وردة", "تفاحة", "تلفاز", "مظلة", "قرد", 
+        "قطة", "بطيخ", "قمر", "شمس", "عنكبوت", "طائرة", "دراجة", "نار",
+        "ثلج", "جبل", "بحر", "مفتاح", "ساعة", "كتاب", "فيل", "أسد", "قهوة",
+        "مستشفى", "ذهب", "طبيب", "وردة", "تفاحة", "تلفاز", "مظلة", "قرد",
         "ديناصور", "بيتزا", "تمساح", "سيارة", "فضائي", "أحمر", "أزرق"
       ];
       setForcedLieWord(lieWords[Math.floor(Math.random() * lieWords.length)]);
@@ -193,18 +193,18 @@ export function Game1Challenge() {
 
           {/* Reveal & Link Actions */}
           <div className="flex flex-col gap-2">
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               className="bg-blue-600 hover:bg-blue-500 w-full flex items-center justify-center gap-2 font-bold text-base py-3"
               onClick={() => setIsModalOpen(true)}
             >
               👁️ افتح الصندوق واعرض الصورة
             </Button>
-            
-            <a 
-              href={imgUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+
+            <a
+              href={imgUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-blue-400 hover:text-blue-300 underline text-center font-semibold block py-1"
             >
               🔗 رابط مباشر لفتح الصورة في علامة تبويب جديدة
@@ -249,11 +249,10 @@ export function Game1Challenge() {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-6 w-full">
-              <div className={`text-5xl font-black py-4 px-8 rounded-2xl ${
-                wheelResult === 'truth'
+              <div className={`text-5xl font-black py-4 px-8 rounded-2xl ${wheelResult === 'truth'
                   ? 'text-green-400 bg-green-900/30 border border-green-500/30'
                   : 'text-red-400 bg-red-900/30 border border-red-500/30'
-              }`}>
+                }`}>
                 {wheelResult === 'truth' ? '✅ حقيقة' : '❌ كذبة'}
               </div>
               <p className="text-slate-300 text-center text-sm">
@@ -300,25 +299,25 @@ export function Game1Challenge() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 md:p-8">
           <div className="bg-slate-900 border border-blue-500/30 rounded-2xl w-[90vw] md:w-[70vw] h-[85vh] md:h-[70vh] max-w-6xl p-6 flex flex-col items-center gap-4 shadow-2xl relative">
             {/* Close Button */}
-            <button 
+            <button
               className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-slate-800 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition-all"
               onClick={() => setIsModalOpen(false)}
             >
               ✕
             </button>
-            
+
             <h3 className="text-xl md:text-2xl font-bold text-white text-center">
               🖼️ الصورة السرية للمحتوى
             </h3>
-            
+
             <p className="text-sm text-slate-300 text-center px-8">
               "{activePrompt?.text}"
             </p>
 
             {/* Modal Image Area */}
             <div className="relative w-full flex-1 min-h-0 rounded-xl overflow-hidden bg-[#0B1020] flex items-center justify-center border border-slate-700/50">
-              <img 
-                src={imgUrl} 
+              <img
+                src={imgUrl}
                 alt={activePrompt?.text ?? ''}
                 className="w-full h-full object-contain rounded-xl"
               />

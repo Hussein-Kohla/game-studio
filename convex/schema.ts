@@ -63,7 +63,8 @@ export default defineSchema({
 
   imposterWords: defineTable({
     categoryId: v.string(),
-    word: v.string(),
-    impostorWord: v.string(),
+    words: v.optional(v.array(v.string())),
+    word: v.optional(v.string()),
+    impostorWord: v.optional(v.string()),
   }).index("by_category", ["categoryId"]),
 });
