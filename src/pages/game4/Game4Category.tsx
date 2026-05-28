@@ -6,14 +6,19 @@ import { api } from '../../../convex/_generated/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useGame4Store } from '../../store/game4Store';
+import { useAuthStore } from '../../store/authStore';
 import { CATEGORY_ASSETS } from '../../data/game4Assets';
 import { playTurnSound } from '../../utils/sounds';
 
 export function Game4Category() {
   const navigate = useNavigate();
-  const { players, setCategory, startRound, getUsedPairIds, getUsedCount } = useGame4Store();
+  const { players, setCategory, startRound, getUsedPairIds, clearCategoryProgress } = useGame4Store();
   const categories = useQuery(api.imposter.getCategories);
   const pickPair = useMutation(api.imposter.pickRandomPair);
+
+  const { user, progress: authProgress, addLocalProgress, clearLocalProgress } = useAuthStore();
+  const addUserProgress = useMutation(api.users.addProgress);
+  const clearUserProgress = useMutation(api.users.clearProgress);
 
   if (players.length < 3) {
     navigate('/game4/setup');
@@ -24,19 +29,32 @@ export function Game4Category() {
     try {
       playTurnSound();
       setCategory(categoryId, categoryLabel);
-      const exclude = getUsedPairIds(categoryId);
-      const pair = await pickPair({ categoryId, exclude });
-      if (!pair) {
-        const used = getUsedCount(categoryId);
-        if (used > 0) {
-          toast.error(
-            'استُخدمت كل كلمات هذا التصنيف في هذه الجلسة! اختر تصنيفاً آخر أو ابدأ لعبة جديدة من الإعداد.',
-            { icon: '📭', duration: 5000 }
-          );
-        } else {
-          toast.error('التصنيف فارغ! شغّل seedImposterWords في Convex.', { icon: '⚠️' });
+      const localExclude = getUsedPairIds(categoryId);
+      const combinedExclude = Array.from(new Set([
+        ...localExclude,
+        ...(authProgress?.game4UsedPairs || [])
+      ]));
+
+      let pair = await pickPair({ categoryId, exclude: combinedExclude });
+
+      if (!pair && combinedExclude.length > 0) {
+        toast('نفدت الكلمات! سيتم إعادة تدوير الكلمات من جديد.', { icon: '🔄' });
+        clearLocalProgress('game4');
+        clearCategoryProgress(categoryId);
+        if (user) {
+          await clearUserProgress({ userId: user._id, game: 'game4' });
         }
+        pair = await pickPair({ categoryId, exclude: [] });
+      }
+
+      if (!pair) {
+        toast.error('التصنيف فارغ! شغّل seedImposterWords في Convex.', { icon: '⚠️' });
         return;
+      }
+
+      addLocalProgress('game4', [pair.pairId]);
+      if (user) {
+        addUserProgress({ userId: user._id, game: 'game4', itemIds: [pair.pairId] }).catch(console.error);
       }
 
       const imposterIndex = Math.floor(Math.random() * players.length);
@@ -66,9 +84,6 @@ export function Game4Category() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
           {categories.map((cat, i) => {
             const assets = CATEGORY_ASSETS[cat.id];
-            const usedInSession = getUsedCount(cat.id);
-            const remaining = Math.max(0, cat.count - usedInSession);
-            const exhausted = remaining === 0 && cat.count > 0;
             return (
               <motion.div
                 key={cat.id}
@@ -78,16 +93,12 @@ export function Game4Category() {
               >
                 <button
                   type="button"
-                  disabled={cat.count === 0 || exhausted}
+                  disabled={cat.count === 0}
                   onClick={() => handleSelect(cat.id, cat.label)}
                   className="w-full text-right disabled:opacity-40"
                 >
                   <Card
-                    className={`p-5 transition-all cursor-pointer flex gap-4 items-center ${
-                      exhausted
-                        ? 'border-slate-600/50 opacity-60'
-                        : 'hover:border-rose-500/50 border-rose-500/20 bg-[#0B1020]/80'
-                    }`}
+                    className={`p-5 transition-all cursor-pointer flex gap-4 items-center hover:border-rose-500/50 border-rose-500/20 bg-[#0B1020]/80`}
                   >
                     {assets && (
                       <img
@@ -100,11 +111,6 @@ export function Game4Category() {
                       <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         {assets?.emoji} {cat.label}
                       </h3>
-                      {exhausted && (
-                        <p className="text-slate-500 text-sm mt-1">
-                          نُفدت في هذه الجلسة — غيّر التصنيف
-                        </p>
-                      )}
                     </div>
                   </Card>
                 </button>

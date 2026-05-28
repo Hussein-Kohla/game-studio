@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useGame2Store } from '../../store/game2Store';
+import { useAuthStore } from '../../store/authStore';
 import { playCorrectSound, playWrongSound, playWinSound } from '../../utils/sounds';
 
 function playAlarmSound() {
@@ -46,6 +47,10 @@ export function Game2Play() {
   const navigate = useNavigate();
   const currentTeam = teams[currentTeamIndex];
 
+  const { user, progress: authProgress, addLocalProgress, clearLocalProgress } = useAuthStore();
+  const addUserProgress = useMutation(api.users.addProgress);
+  const clearUserProgress = useMutation(api.users.clearProgress);
+
   const popWord = useMutation(api.words.popRandomWord);
 
   const [wordData, setWordData] = useState<{ word: string; forbiddenWords: string[] } | null>(null);
@@ -76,17 +81,31 @@ export function Game2Play() {
     setDbEmpty(false);
 
     try {
+      const combinedExclude = Array.from(new Set([
+        ...usedWords,
+        ...(authProgress?.game2UsedWords || [])
+      ]));
+
       const dbWord = await popWord({
         lang: 'ar',
         groupId: selectedGroupId,
-        exclude: usedWords,
+        exclude: combinedExclude,
       });
 
       if (dbWord) {
         setWordData({ word: dbWord.word, forbiddenWords: dbWord.forbiddenWords });
         markWordUsed(dbWord.word);
-      } else if (usedWords.length > 0) {
-        finishGame();
+        addLocalProgress('game2', [dbWord.word]);
+        if (user) {
+          addUserProgress({ userId: user._id, game: 'game2', itemIds: [dbWord.word] }).catch(console.error);
+        }
+      } else if (combinedExclude.length > 0) {
+        toast('نفدت الكلمات! سيتم إعادة تدوير الكلمات من جديد.', { icon: '🔄' });
+        clearLocalProgress('game2');
+        useGame2Store.setState({ usedWords: [] });
+        if (user) {
+          clearUserProgress({ userId: user._id, game: 'game2' }).catch(console.error);
+        }
       } else {
         toast.error('المجموعة فارغة في قاعدة البيانات!', { icon: '⚠️' });
         setDbEmpty(true);

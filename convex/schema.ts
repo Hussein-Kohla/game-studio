@@ -67,4 +67,36 @@ export default defineSchema({
     word: v.optional(v.string()),
     impostorWord: v.optional(v.string()),
   }).index("by_category", ["categoryId"]),
+
+  game5Rooms: defineTable({
+    roomCode: v.string(),
+    players: v.array(v.object({
+      id: v.string(),
+      name: v.string(),
+      isHost: v.boolean(),
+      score: v.number(),
+      currentAnswer: v.union(v.number(), v.null()),
+      answerTime: v.union(v.number(), v.null()),
+    })),
+    phase: v.union(v.literal('lobby'), v.literal('playing'), v.literal('results'), v.literal('gameover')),
+    selectedPackageId: v.union(v.string(), v.null()),
+    currentQuestionIndex: v.number(),
+    questionStartTime: v.union(v.number(), v.null()),
+    answersRevealed: v.boolean(),
+    selectedQuestionIds: v.optional(v.union(v.array(v.string()), v.null())),
+    previousWinnerId: v.optional(v.union(v.string(), v.null())),
+  }).index("by_roomCode", ["roomCode"]),
+
+  users: defineTable({
+    name: v.string(),
+    password: v.string(),
+  }).index("by_name", ["name"]),
+
+  userProgress: defineTable({
+    userId: v.id("users"),
+    game1UsedPrompts: v.array(v.string()),
+    game2UsedWords: v.array(v.string()),
+    game4UsedPairs: v.array(v.string()),
+    game5UsedQuestions: v.array(v.string()),
+  }).index("by_user", ["userId"]),
 });

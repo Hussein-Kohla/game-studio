@@ -18,6 +18,12 @@ import { Game4Questions } from './pages/game4/Game4Questions';
 import { Game4Vote } from './pages/game4/Game4Vote';
 import { Game4Results } from './pages/game4/Game4Results';
 
+// Game 5 Imports
+import Game5Setup from './pages/game5/Game5Setup';
+import Game5Room from './pages/game5/Game5Room';
+import Game5Play from './pages/game5/Game5Play';
+import Game5End from './pages/game5/Game5End';
+
 function App() {
   return (
     <BrowserRouter>
@@ -49,6 +55,12 @@ function App() {
             <Route path="/game4/questions" element={<Game4Questions />} />
             <Route path="/game4/vote" element={<Game4Vote />} />
             <Route path="/game4/results" element={<Game4Results />} />
+
+            {/* Game 5 Routes */}
+            <Route path="/game5/setup" element={<Game5Setup />} />
+            <Route path="/game5/room" element={<Game5Room />} />
+            <Route path="/game5/play" element={<Game5Play />} />
+            <Route path="/game5/end" element={<Game5End />} />
           </Routes>
         </main>
       </div>

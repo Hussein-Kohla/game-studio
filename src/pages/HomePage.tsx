@@ -1,12 +1,29 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Tilt from 'react-parallax-tilt';
-import { Box, FileQuestion, Layers, Users } from 'lucide-react';
+import { Box, FileQuestion, Layers, Users, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card';
+import { AuthModal } from '../components/AuthModal';
+import { useAuthStore } from '../store/authStore';
+import { useState } from 'react';
 
 export function HomePage() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user } = useAuthStore();
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden" dir="rtl">
+
+      {/* Auth Button */}
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={() => setIsAuthModalOpen(true)}
+          className="bg-slate-800 hover:bg-slate-700 border border-purple-500/30 text-white px-6 py-2 rounded-full font-bold shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all flex items-center gap-2"
+        >
+          <span className="text-xl">👤</span>
+          {user ? user.name : 'تسجيل حساب'}
+        </button>
+      </div>
 
       {/* Background Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/30 blur-[120px] rounded-full" />
@@ -91,14 +108,31 @@ export function HomePage() {
               <p className="text-slate-400 text-lg">
                 اكتشف من بينكم الغريب! كلمات سرية، أسئلة، تصويت، وكشف الامبوستر — لعبة جماعية على هاتف واحد.
               </p>
-              <div className="mt-4 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-sm font-bold">
-                🆕 جديد • محلي
+            </Card>
+          </Link>
+        </Tilt>
+
+        {/* Game 5 Card */}
+        <Tilt tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.05} transitionSpeed={2500} className="w-full max-w-sm mx-auto">
+          <Link to="/game5/setup" className="block h-full">
+            <Card glow="none" className="h-full flex flex-col items-center text-center group cursor-pointer border-amber-500/20 hover:border-amber-500/50 bg-[#0B1020]/80 shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:shadow-[0_0_30px_rgba(245,158,11,0.35)] transition-all">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-500/20 to-yellow-600/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform group-hover:from-amber-500/30 group-hover:to-yellow-600/30 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                <Zap className="w-12 h-12 text-amber-400" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4 text-white group-hover:text-amber-400 transition-colors">جاوب أسرع</h2>
+              <p className="text-slate-400 text-lg">
+                أسئلة عامة ومنافسة على السرعة! أجب بشكل صحيح وبأسرع وقت لجمع أكبر عدد من النقاط.
+              </p>
+              <div className="mt-4 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-sm font-bold">
+                🆕 جديد • أونلاين
               </div>
             </Card>
           </Link>
         </Tilt>
 
       </div>
+      
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useGame1Store } from '../../store/game1Store';
+import { useAuthStore } from '../../store/authStore';
 import { SpinWheel } from '../../components/game1/SpinWheel';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -16,6 +17,10 @@ export function Game1Challenge() {
 
   const { teams, currentTeamIndex, openBox, addScore, nextTurn } = useGame1Store();
   const currentTeam = teams[currentTeamIndex];
+
+  const { user, progress: authProgress, addLocalProgress, clearLocalProgress } = useAuthStore();
+  const addUserProgress = useMutation(api.users.addProgress);
+  const clearUserProgress = useMutation(api.users.clearProgress);
 
   const popPrompt = useMutation(api.prompts.popRandomPrompt);
 
@@ -92,18 +97,35 @@ export function Game1Challenge() {
     setForcedLieWord(null);
 
     try {
-      const dbPrompt = await popPrompt({ groupId, exclude: usedPrompts });
+      const combinedExclude = Array.from(new Set([
+        ...usedPrompts,
+        ...(authProgress?.game1UsedPrompts || [])
+      ]));
+
+      const dbPrompt = await popPrompt({ groupId, exclude: combinedExclude });
       if (dbPrompt) {
         markPromptUsed(dbPrompt.text);
+        addLocalProgress('game1', [dbPrompt.text]);
+        if (user) {
+          addUserProgress({ userId: user._id, game: 'game1', itemIds: [dbPrompt.text] }).catch(console.error);
+        }
+
         setActivePrompt({ text: dbPrompt.text, textEn: dbPrompt.textEn });
         loadImage(dbPrompt.textEn);
       } else {
-        const msg =
-          usedPrompts.length > 0
-            ? 'استُخدمت كل أفكار هذه المجموعة في هذه الجلسة! ابدأ لعبة جديدة أو اختر مجموعة أخرى.'
-            : 'المجموعة فارغة في قاعدة البيانات!';
-        toast.error(msg, { icon: '⚠️' });
-        setIsEmpty(true);
+        if (combinedExclude.length > 0) {
+          toast('نفدت الكلمات! سيتم إعادة تدوير الكلمات من جديد.', { icon: '🔄' });
+          clearLocalProgress('game1');
+          useGame1Store.setState({ usedPrompts: [] });
+          if (user) {
+            clearUserProgress({ userId: user._id, game: 'game1' }).catch(console.error);
+          }
+          // The user will need to click 'محتوى آخر' or we could auto fetch, but let's just let them click.
+          setIsEmpty(true);
+        } else {
+          toast.error('المجموعة فارغة في قاعدة البيانات!', { icon: '⚠️' });
+          setIsEmpty(true);
+        }
       }
     } catch {
       toast.error('حدث خطأ في الاتصال بقاعدة البيانات.', { icon: '❌' });

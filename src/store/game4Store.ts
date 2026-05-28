@@ -49,6 +49,7 @@ interface Game4State {
   setPhase: (phase: Game4Phase) => void;
   getWinner: () => Game4Player | null;
   resetGame: () => void;
+  clearCategoryProgress: (categoryId: string) => void;
 }
 
 const initialState = {
@@ -180,6 +181,11 @@ export const useGame4Store = create<Game4State>()(
       },
 
       resetGame: () => set({ ...initialState }),
+
+      clearCategoryProgress: (categoryId) =>
+        set((state) => ({
+          usedPairsByCategory: { ...state.usedPairsByCategory, [categoryId]: [] },
+        })),
     }),
     {
       name: 'party-game4-storage',

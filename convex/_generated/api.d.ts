@@ -9,6 +9,7 @@
  */
 
 import type * as game3 from "../game3.js";
+import type * as game5 from "../game5.js";
 import type * as http from "../http.js";
 import type * as images from "../images.js";
 import type * as imposter from "../imposter.js";
@@ -17,6 +18,7 @@ import type * as imposterData from "../imposterData.js";
 import type * as prompts from "../prompts.js";
 import type * as promptsData from "../promptsData.js";
 import type * as seed from "../seed.js";
+import type * as users from "../users.js";
 import type * as words from "../words.js";
 import type * as wordsData from "../wordsData.js";
 
@@ -28,6 +30,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   game3: typeof game3;
+  game5: typeof game5;
   http: typeof http;
   images: typeof images;
   imposter: typeof imposter;
@@ -36,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   prompts: typeof prompts;
   promptsData: typeof promptsData;
   seed: typeof seed;
+  users: typeof users;
   words: typeof words;
   wordsData: typeof wordsData;
 }>;
